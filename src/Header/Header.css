@@ -1,0 +1,12 @@
+.custom-toolbar.MuiAppBar-root {
+    background-color: #FFFFFF; /* White background */
+    color: black;
+  }
+
+.heading {
+  color: #1159f5;
+}
+
+.slogan {
+  color: #000000;
+}

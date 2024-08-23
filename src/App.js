@@ -1,25 +1,71 @@
-import logo from './logo.svg';
-import './App.css';
+import { useEffect, useState } from 'react';
+import { Box, Toolbar, Container } from '@mui/material';
+import Header from './Header/Header';
+import Home from './Home/Home';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Consultation from './Consultation/Consultation';
+import About from './About/About';
+import { fetchDataWithParam } from './Helper/ApiHelper';
+import CircularProgress from '@mui/material/CircularProgress';
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+  const [uiDetails, setUiDetails] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const getUIDetails = async () => {
+      try {
+        const uiData = await fetchDataWithParam('ui-details', 'english');
+        setUiDetails(uiData);
+      } catch(error) {
+        console.error('Error fetching documents', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    getUIDetails();
+  }, []);
+  
+  if (isLoading) {
+    return (
+      <>
+        <Box sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100vh'  // Makes the Box take up the full viewport height
+          }}
         >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+          <CircularProgress color="primary" size={50} />
+        </Box>
+      </>)
+  } else {
+    return (
+      <>
+        {uiDetails ? (
+          <Router>
+          <Header menuDetails={uiDetails.menu} />
+          <Toolbar />
+    
+          <Container>
+            <Box sx={{ my: 2 }}>
+              <Routes>
+                <Route path='/' element={<Home uiDetails={uiDetails.home} />} />
+                <Route path='/Consultation' element={<Consultation />} />
+                <Route path='/About' element={<About />} />
+              </Routes>
+            </Box>
+          </Container>
+        </Router>
+        ):(
+          <>
+          <p>Something went wrong</p>
+          </>
+        )}
+      </>
+    );
+  }
 }
 
 export default App;
