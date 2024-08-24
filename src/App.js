@@ -7,6 +7,7 @@ import Consultation from './Consultation/Consultation';
 import About from './About/About';
 import { fetchDataWithParam } from './Helper/ApiHelper';
 import CircularProgress from '@mui/material/CircularProgress';
+import Footer from './Header/Footer';
 
 function App() {
   const [uiDetails, setUiDetails] = useState([]);
@@ -57,10 +58,12 @@ function App() {
               </Routes>
             </Box>
           </Container>
+
+          <Footer footerDetails={uiDetails.footer}/>
         </Router>
         ):(
           <>
-          <p>Something went wrong</p>
+          <p>We are working on to fix the issue...</p>
           </>
         )}
       </>

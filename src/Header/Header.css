@@ -1,7 +1,23 @@
-.custom-toolbar.MuiAppBar-root {
+.custom-appbar.MuiAppBar-root {
     background-color: #FFFFFF; /* White background */
     color: black;
   }
+
+.custom-toolbar.MuiToolbar-root {
+  background-color: #FFFFFF;
+}
+
+.custom-primary-menu.MuiMenuItem-root {
+  background-color: #1159f5;
+  color: #FFFFFF;
+  border-radius: 5mm;
+}
+
+.custom-primary-menu.MuiMenuItem-root:hover {
+  background-color: #7598e2;
+  color: #FFFFFF;
+  border: none;
+}
 
 .heading {
   color: #1159f5;

@@ -5,16 +5,12 @@ import CommonDisease from './CommonDisease';
 import TreatmentProvided from './TreatmentProvided';
 import CustomerReview from './CustomerReview';
 import { fetchData } from '../Helper/ApiHelper';
+import './Home.css';
 
 function Home({uiDetails}) {
     const [homeDetails, setHomeDetails] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const diseaseData = [
-        { disease: 'Cough', imgPath: 'path/to/cough.jpg' },
-        { disease: 'Cold', imgPath: 'path/to/cold.jpg' },
-        { disease: 'Fever', imgPath: 'path/to/fever.jpg' }
-      ];
     const treatmentCategory = [
         { category: 'Hair Treatment', subCategory : ['Hair Fall', 'White Hair', 'Dandruff', 'Hair thickness']},
         { category: 'Skin Treatment', subCategory: ['Rash', 'Sun burn', 'Pimple']},
@@ -83,41 +79,42 @@ function Home({uiDetails}) {
             <Typography variant='h4' gutterBottom>
                 {uiDetails.welcome}
             </Typography>
-            <Typography variant='body1'>
+            <Typography variant='subtitle1'>
                 {uiDetails.specialize}
             </Typography>
 
-            <Typography variant='h6' gutterBottom style={{marginTop: '20px'}}>
+            <Typography variant='h5' gutterBottom style={{marginTop: '20px'}}>
                 {uiDetails.header_para2}
             </Typography>
-            <Typography variant='body1'>
+            <Typography variant='subtitle2'>
                 {uiDetails.body_para2}
             </Typography>
 
-            {/* Partition */}
-            <Paper style={{ margin: '20px 0', padding: '10px', backgroundColor: '#F2F2F2'}} elevation={3}>
-                <Typography variant='h5'>
+            {/* Partition Common Remedies*/}
+            <Paper className='custom-paper' elevation={0}>
+                <Typography variant='h6' className='custom-center'>
                     {uiDetails.common_disease}
                 </Typography>
-            </Paper>
-            <CenteredContainer>
-                <ScrollContainer>
-                    {homeDetails.recent_treatment.map((recentTreatment, index) => (
-                        <CommonDisease key={index} disease={recentTreatment.treatmentName} imgPath={recentTreatment.imgPath} />
-                    ))}
-                </ScrollContainer>
-            </CenteredContainer>
 
-            { /* Partition */}
-            <Paper style={{ margin: '20px 0', padding: '10px', backgroundColor: '#F2F2F2' }} elevation={3}>
-                <Typography variant='h5'>{uiDetails.treatment_provided}</Typography>
+                <CenteredContainer>
+                    <ScrollContainer>
+                        {homeDetails.recent_treatment.map((recentTreatment, index) => (
+                            <CommonDisease key={index} disease={recentTreatment.treatmentName} imgPath={recentTreatment.imgPath} />
+                        ))}
+                    </ScrollContainer>
+                </CenteredContainer>
+            </Paper>
+
+            { /* Partition Treatments Provided*/}
+            <Paper className='custom-paper' elevation={0}>
+                <Typography variant='h6' className='custom-center'>{uiDetails.treatment_provided}</Typography>
             </Paper>
             <TreatmentProvided treatmentCategory={treatmentCategory} />
 
-            { /* Partition */}
-            <Paper style={{ margin: '20px 0', padding: '10px', backgroundColor: '#F2F2F2' }} elevation={3}>
-                <Typography variant='h5'>{uiDetails.reviews}</Typography>
-                <Typography variant='body1'>{uiDetails.cure_count}</Typography>
+            { /* Partition Reviews*/}
+            <Paper className='custom-paper' elevation={0}>
+                <Typography variant='h6' className='custom-center'>{uiDetails.reviews}</Typography>
+                <Typography variant='body1' className='custom-center'>{uiDetails.cure_count}</Typography>
             </Paper>
             <CustomerReview customerRating={customerReview} />
 

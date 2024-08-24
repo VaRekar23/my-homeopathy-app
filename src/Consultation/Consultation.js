@@ -10,7 +10,7 @@ function Consultation ()  {
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
-                height: '100vh'  // Makes the Box take up the full viewport height
+                height: '90%'  // Makes the Box take up the full viewport height
             }}
         >
             <CircularProgress color="primary" size={50} />

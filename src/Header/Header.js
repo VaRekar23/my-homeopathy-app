@@ -4,7 +4,6 @@ import MenuIcon from '@mui/icons-material/Menu';
 import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import './Header.css';
-import logo from './SereneCare.png';
 
 function Header({headerDetails, menuDetails}) {
     const [anchorEl, setAnchorEl] = useState(null);
@@ -22,8 +21,8 @@ function Header({headerDetails, menuDetails}) {
     }
 
     return (
-        <AppBar position='fixed' className='custom-toolbar'>
-            <Toolbar>
+        <AppBar position='fixed' className='custom-appbar'>
+            <Toolbar className='custom-toolbar'>
                 {/* Site Name as Home Link */}
                 <Box sx={{ display:'flex', alignItems: 'center', flexGrow: 1 }}>
                     {/*<DoctorIcon sx={{ fontSize:40, mr:1 }} />*/}
@@ -37,7 +36,7 @@ function Header({headerDetails, menuDetails}) {
                     {/*        {headerDetails.slogan} */}
                     {/*    </Typography> */}
                     {/*</Box> */}
-                    <img src={logo} alt='Logo' style={{ height: '64px', marginRight: '10px' }} onClick={() => window.location.href = '/'} />
+                    <img src='/SereneCare.png' alt='Logo' style={{ height: '70px', marginRight: '10px' }} onClick={() => window.location.href = '/'} />
                 </Box>
 
                 {/* Menu items */}
@@ -57,6 +56,7 @@ function Header({headerDetails, menuDetails}) {
                         {Object.keys(menuDetails).map((key) => (
                             <MenuItem key={key} onClick={() => window.location.href = menuDetails[key].path}>{menuDetails[key].item}</MenuItem>
                         ))}
+                        <MenuItem className='custom-primary-menu'>Sign In</MenuItem>
                     </>
                 )}
             </Toolbar>
