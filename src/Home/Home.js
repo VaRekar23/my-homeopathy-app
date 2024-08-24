@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {styled} from '@mui/system';
-import { Box, CircularProgress, Container, Paper, Typography } from '@mui/material';
+import { Box, CircularProgress, Container, Paper, Rating, Typography } from '@mui/material';
 import CommonDisease from './CommonDisease';
 import TreatmentProvided from './TreatmentProvided';
 import CustomerReview from './CustomerReview';
@@ -11,25 +11,10 @@ function Home({uiDetails}) {
     const [homeDetails, setHomeDetails] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const treatmentCategory = [
-        { category: 'Hair Treatment', subCategory : ['Hair Fall', 'White Hair', 'Dandruff', 'Hair thickness']},
-        { category: 'Skin Treatment', subCategory: ['Rash', 'Sun burn', 'Pimple']},
-        { category: 'Respiratory', subCategory: ['Lung health','Asthma']}
-    ];
-    const customerReview = [
-        { customerName: 'Vaibhav', treatment: 'Hair Treatment', disease: 'Hair Fall', beforePhoto: 'path/to/beforePhoto', 
-            afterPhoto: 'path/to/afterPhoto', customerRating: 5},
-        { customerName: 'Anju', treatment: 'Skin Treatment', disease: 'Rash', beforePhoto: 'path/to/beforePhoto', 
-            afterPhoto: 'path/to/afterPhoto', customerRating: 3},
-        { customerName: 'Prasad', treatment: 'Respiratory', disease: 'Asthma', beforePhoto: null, 
-            afterPhoto: null, customerRating: 4}
-    ];
-
     useEffect(() => {
         const getUIDetails = async () => {
           try {
             const homeData = await fetchData('home-details');
-            console.log('HomeData', homeData);
             setHomeDetails(homeData);
           } catch(error) {
             console.error('Error fetching documents', error);
@@ -108,20 +93,21 @@ function Home({uiDetails}) {
             { /* Partition Treatments Provided*/}
             <Paper className='custom-paper' elevation={0}>
                 <Typography variant='h6' className='custom-center'>{uiDetails.treatment_provided}</Typography>
+                <TreatmentProvided treatmentCategory={homeDetails.treatments} />
             </Paper>
-            <TreatmentProvided treatmentCategory={treatmentCategory} />
 
             { /* Partition Reviews*/}
             <Paper className='custom-paper' elevation={0}>
                 <Typography variant='h6' className='custom-center'>{uiDetails.reviews}</Typography>
+                <Box className='custom-center'>
+                    <Rating name='customer-rating' value={homeDetails.overall_feedback.rating} readOnly sx={{ color: 'gold'}} />
+                    <Typography variant='body1'>
+                        {homeDetails.overall_feedback.rating} ratings of {homeDetails.overall_feedback.totalCount} reviews!
+                    </Typography>
+                </Box>
                 <Typography variant='body1' className='custom-center'>{uiDetails.cure_count}</Typography>
-            </Paper>
-            <CustomerReview customerRating={customerReview} />
 
-            <Paper style={{ margin: '20px 0', padding: '10px', backgroundColor: '#F2F2F2'}} elevation={3}>
-                <Typography variant='h6'>{uiDetails.contact_tab}</Typography>
-                <Typography variant='body2'>{uiDetails.contact_name}</Typography>
-                <Typography variant='body2'>{uiDetails.contact_phone}</Typography>
+                <CustomerReview customerRating={homeDetails.feedbacks} overallRating={homeDetails.overall_feedback} />
             </Paper>
 
         </StyledContainer>

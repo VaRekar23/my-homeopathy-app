@@ -1,5 +1,5 @@
 import React from 'react';
-import { Accordion, AccordionSummary, AccordionDetails, Typography, List, ListItem, ListItemText, Grid, Divider } from '@mui/material';
+import { Accordion, AccordionSummary, AccordionDetails, Typography, Grid, Paper } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 function TreatmentProvided({treatmentCategory}) {
@@ -9,19 +9,20 @@ function TreatmentProvided({treatmentCategory}) {
                 <Grid item xs={12} key={index}>
                     <Accordion>
                         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                            <Typography variant='h6'>{item.category}</Typography>
+                            <Typography variant='h6'>{item.name}</Typography>
                         </AccordionSummary>
                         <AccordionDetails>
-                            <List>
-                                {item.subCategory.map((subCat, subIndex) => (
-                                    <React.Fragment key={subIndex}>
-                                        <ListItem>
-                                            <ListItemText primary={subCat} />
-                                            { subIndex < item.subCategory.lenght-1 && <Divider />}
-                                        </ListItem>
-                                    </React.Fragment>
-                                ))}
-                            </List>
+                        <Grid container spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }}>
+                            {item.subCategoryList.map((subCat, subIndex) => (
+                                <Grid item xs={2} sm={4} md={4} key={subIndex}>
+                                    <Paper style={{textAlign:'center', padding:8}}>
+                                        <Typography variant='body1'>{subCat.name}</Typography>
+                                    </Paper>
+                                </Grid>
+                            ))}
+                        </Grid>
+                            
+                            
                         </AccordionDetails>
                     </Accordion>
                 </Grid>

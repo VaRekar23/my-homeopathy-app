@@ -7,3 +7,8 @@
     display: flex;
     justify-content: center;
 }
+
+.custom-center.MuiBox-root {
+    display: flex;
+    justify-content: center;
+}
