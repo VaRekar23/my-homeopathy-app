@@ -1,0 +1,35 @@
+.hero.MuiContainer-root {
+    width: 100%;
+    height: 90%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.hero-left.MuiContainer-root,
+.hero-right.MuiContainer-root {
+    flex: 1;
+    box-sizing: border-box;
+    padding: 10px;
+    display: grid;
+    justify-content: center;
+    align-items: center;
+}
+
+.hero-left.MuiContainer-root img {
+    width: 370px;
+    border-radius: 5mm;
+}
+
+.clinic-address.MuiContainer-root {
+    margin-bottom: 20px;
+    flex: 1;
+  }
+  
+.clinic-map.MuiContainer-root {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    flex: 1;
+}

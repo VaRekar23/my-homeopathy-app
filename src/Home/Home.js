@@ -59,7 +59,7 @@ function Home({uiDetails}) {
           </>)
       } else {
     return (
-        <StyledContainer style={{color: '#36454F'}}>
+        <StyledContainer>
             {/* Doctor's Intro */}
             <Typography variant='h4' gutterBottom>
                 {uiDetails.welcome}
@@ -107,7 +107,11 @@ function Home({uiDetails}) {
                 </Box>
                 <Typography variant='body1' className='custom-center'>{uiDetails.cure_count}</Typography>
 
-                <CustomerReview customerRating={homeDetails.feedbacks} overallRating={homeDetails.overall_feedback} />
+                <CenteredContainer>
+                    <ScrollContainer>
+                        <CustomerReview customerRating={homeDetails.feedbacks} overallRating={homeDetails.overall_feedback} />
+                    </ScrollContainer>
+                </CenteredContainer>
             </Paper>
 
         </StyledContainer>

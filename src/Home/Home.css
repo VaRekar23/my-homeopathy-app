@@ -1,6 +1,7 @@
 .custom-paper.MuiPaper-root {
     margin: 20px 0;
     padding: 10px;
+    text-decoration: solid;
 }
 
 .custom-center.MuiTypography-root {

@@ -5,7 +5,7 @@ import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import './Header.css';
 
-function Header({headerDetails, menuDetails}) {
+function Header({headerDetails, menuDetails, setActiveComponent}) {
     const [anchorEl, setAnchorEl] = useState(null);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -15,9 +15,10 @@ function Header({headerDetails, menuDetails}) {
         setAnchorEl(event.currentTarget);
     }
 
-    const handleClose = (path) => {
+    const handleClose = (component) => {
         setAnchorEl(null);
-        navigate(path);
+        //navigate(path);
+        setActiveComponent(component)
     }
 
     return (
@@ -47,14 +48,15 @@ function Header({headerDetails, menuDetails}) {
                         </IconButton>
                         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
                             {Object.keys(menuDetails).map((key) => (
-                                <MenuItem key={key} onClick={() => handleClose(menuDetails[key].path)}>{menuDetails[key].item}</MenuItem>
+                                <MenuItem key={key} onClick={() => handleClose(menuDetails[key].item)}>{menuDetails[key].item}</MenuItem>
                             ))}
+                            <MenuItem >Sign In</MenuItem>
                         </Menu>
                     </>
                 ) : (
                     <>
                         {Object.keys(menuDetails).map((key) => (
-                            <MenuItem key={key} onClick={() => window.location.href = menuDetails[key].path}>{menuDetails[key].item}</MenuItem>
+                            <MenuItem key={key} onClick={() => setActiveComponent(menuDetails[key].item) }>{menuDetails[key].item}</MenuItem>
                         ))}
                         <MenuItem className='custom-primary-menu'>Sign In</MenuItem>
                     </>

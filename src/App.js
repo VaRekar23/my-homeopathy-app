@@ -12,6 +12,7 @@ import Footer from './Header/Footer';
 function App() {
   const [uiDetails, setUiDetails] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeComponent, setActiveComponent] = useState('Home');
 
   useEffect(() => {
     const getUIDetails = async () => {
@@ -27,6 +28,23 @@ function App() {
 
     getUIDetails();
   }, []);
+
+  useEffect(() => {
+    renderComponent();
+  }, [activeComponent]);
+
+  const renderComponent = () => {
+    switch (activeComponent) {
+      case 'Home':
+        return <Home uiDetails={uiDetails.home} />;
+      case 'Consultation':
+        return <Consultation />;
+      case 'About':
+        return <About uiDetails={uiDetails.about} />;
+      default:
+        return <Home uiDetails={uiDetails.home} />;
+    }
+  }
   
   if (isLoading) {
     return (
@@ -46,16 +64,17 @@ function App() {
       <>
         {uiDetails ? (
           <Router>
-          <Header menuDetails={uiDetails.menu} />
+          <Header menuDetails={uiDetails.menu} setActiveComponent={setActiveComponent} />
           <Toolbar />
     
           <Container>
             <Box sx={{ my: 2 }}>
-              <Routes>
+              {/* <Routes>
                 <Route path='/' element={<Home uiDetails={uiDetails.home} />} />
                 <Route path='/Consultation' element={<Consultation />} />
                 <Route path='/About' element={<About />} />
-              </Routes>
+              </Routes> */}
+              {renderComponent()}
             </Box>
           </Container>
 
