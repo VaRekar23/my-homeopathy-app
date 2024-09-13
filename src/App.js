@@ -8,11 +8,13 @@ import About from './About/About';
 import { fetchDataWithParam } from './Helper/ApiHelper';
 import CircularProgress from '@mui/material/CircularProgress';
 import Footer from './Header/Footer';
+import HomeAdmin from './Admin/Home/HomeAdmin';
 
 function App() {
   const [uiDetails, setUiDetails] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeComponent, setActiveComponent] = useState('Home');
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const getUIDetails = async () => {
@@ -30,7 +32,12 @@ function App() {
   }, []);
 
   useEffect(() => {
-    renderComponent();
+    if (isAdmin) {
+      renderAdminComponent();
+    } else {
+      renderComponent();
+    }
+    
   }, [activeComponent]);
 
   const renderComponent = () => {
@@ -43,6 +50,19 @@ function App() {
         return <About uiDetails={uiDetails.about} />;
       default:
         return <Home uiDetails={uiDetails.home} />;
+    }
+  }
+
+  const renderAdminComponent = () => {
+    switch (activeComponent) {
+      case 'Home':
+        return <HomeAdmin uiDetails={uiDetails.home} />;
+      case 'Consultation':
+        return <Consultation />;
+      case 'About':
+        return <About uiDetails={uiDetails.about} />;
+      default:
+        return <HomeAdmin uiDetails={uiDetails.home} />;
     }
   }
   
@@ -64,17 +84,12 @@ function App() {
       <>
         {uiDetails ? (
           <Router>
-          <Header menuDetails={uiDetails.menu} setActiveComponent={setActiveComponent} />
+          <Header menuDetails={uiDetails.menu} setActiveComponent={setActiveComponent} setIsAdmin={setIsAdmin} />
           <Toolbar />
     
           <Container>
             <Box sx={{ my: 2 }}>
-              {/* <Routes>
-                <Route path='/' element={<Home uiDetails={uiDetails.home} />} />
-                <Route path='/Consultation' element={<Consultation />} />
-                <Route path='/About' element={<About />} />
-              </Routes> */}
-              {renderComponent()}
+              {isAdmin ? (renderAdminComponent) : (renderComponent())}
             </Box>
           </Container>
 

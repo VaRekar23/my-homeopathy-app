@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import { AppBar, Toolbar, Typography, IconButton, Menu, MenuItem, useMediaQuery, Box } from '@mui/material';
+import { AppBar, Toolbar, Typography, IconButton, Menu, MenuItem, useMediaQuery, Box, Modal } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import './Header.css';
+import Login from '../Login/Login';
 
-function Header({headerDetails, menuDetails, setActiveComponent}) {
+function Header({headerDetails, menuDetails, setActiveComponent, setIsAdmin}) {
     const [anchorEl, setAnchorEl] = useState(null);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const navigate = useNavigate();
+    const [open, setOpen] = useState(false);
 
     const handleMenu = (event) => {
         setAnchorEl(event.currentTarget);
@@ -19,6 +21,15 @@ function Header({headerDetails, menuDetails, setActiveComponent}) {
         setAnchorEl(null);
         //navigate(path);
         setActiveComponent(component)
+    }
+
+    const handleLoginOpen = () => setOpen(true);
+    const handleLoginClose = () => setOpen(false);
+
+    const handleLogin = () => {
+        <Modal open={true} onClose={handleLoginClose} >
+            <Login setIsAdmin={setIsAdmin} handleClose={handleLoginClose} />
+        </Modal>
     }
 
     return (
@@ -50,7 +61,7 @@ function Header({headerDetails, menuDetails, setActiveComponent}) {
                             {Object.keys(menuDetails).map((key) => (
                                 <MenuItem key={key} onClick={() => handleClose(menuDetails[key].item)}>{menuDetails[key].item}</MenuItem>
                             ))}
-                            <MenuItem >Sign In</MenuItem>
+                            <MenuItem onClick={handleLogin}>Sign In</MenuItem>
                         </Menu>
                     </>
                 ) : (
@@ -58,7 +69,7 @@ function Header({headerDetails, menuDetails, setActiveComponent}) {
                         {Object.keys(menuDetails).map((key) => (
                             <MenuItem key={key} onClick={() => setActiveComponent(menuDetails[key].item) }>{menuDetails[key].item}</MenuItem>
                         ))}
-                        <MenuItem className='custom-primary-menu'>Sign In</MenuItem>
+                        <MenuItem className='custom-primary-menu' onClick={handleLogin}>Sign In</MenuItem>
                     </>
                 )}
             </Toolbar>
