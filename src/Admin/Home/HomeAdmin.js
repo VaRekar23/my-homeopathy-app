@@ -1,23 +1,27 @@
 import { Button, TextField } from '@mui/material';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import SaveIcon from '@mui/icons-material/Save';
 import { Cancel, EditNote } from '@mui/icons-material';
 import Home from '../../Home/Home';
 import './HomeAdmin.css';
+import { fetchDataWithParam, updateUIData } from '../../Helper/ApiHelper';
 
 function HomeAdmin({uiDetails}) {
+    const [updatedUiDetails, setUpdatedUiDetails] = useState(uiDetails);
+
     const [homeDetails, setHomeDetails] = useState({
-        welcome: uiDetails.welcome,
-        specialize: uiDetails.specialize,
-        header_para2: uiDetails.header_para2,
-        body_para2: uiDetails.body_para2,
-        common_disease: uiDetails.common_disease,
-        treatment_provided: uiDetails.treatment_provided,
-        reviews: uiDetails.reviews,
-        cure_count: uiDetails.cure_count
+        welcome: updatedUiDetails.welcome,
+        specialize: updatedUiDetails.specialize,
+        header_para2: updatedUiDetails.header_para2,
+        body_para2: updatedUiDetails.body_para2,
+        common_disease: updatedUiDetails.common_disease,
+        treatment_provided: updatedUiDetails.treatment_provided,
+        reviews: updatedUiDetails.reviews,
+        cure_count: updatedUiDetails.cure_count
     });
 
     const [isEdit, setIsEdit] = useState(false);
+    const [status, setStatus] = useState('');
 
     const onEditClick = () => {
         setIsEdit(true);
@@ -27,9 +31,27 @@ function HomeAdmin({uiDetails}) {
         setIsEdit(false);
     };
 
-    const onSaveClick = (e) => {
-        console.log('Save click', homeDetails);
+    const onSaveClick = async (e) => {
+        const response = updateUIData('update-homedetails', homeDetails, 'english');
+
+        setStatus(response);
     };
+
+    useEffect(() => {
+        setIsEdit(false);
+
+        const getUIDetails = async () => {
+            try {
+              const uiData = await fetchDataWithParam('ui-details', 'english');
+              setUpdatedUiDetails(uiData.home);
+              console.log('UI Data', uiData.home);
+            } catch(error) {
+              console.error('Error fetching documents', error);
+            }
+          };
+      
+          getUIDetails();
+    }, [status]);
 
     const handleOnChange = useCallback((e) => {
         const { name, value } = e.target;
@@ -79,7 +101,7 @@ function HomeAdmin({uiDetails}) {
     } else {
         return (
             <>
-                <Home uiDetails={uiDetails} />
+                <Home uiDetails={updatedUiDetails} />
                 <div className='container'>
                     <Button variant="contained" color='primary' className='custom-button' sx={{mt:2}}
                             onClick={onEditClick} startIcon={<EditNote />}>Edit</Button>

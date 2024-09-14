@@ -41,4 +41,22 @@ export const fetchMenuItem = async(apiEndpoint, param) => {
         console.error('Error fetching documents', error);
         throw error;
     }
-}
+};
+
+export const updateUIData = async(apiEndpoint, param, contentIn) => {
+    try {
+        const response = await axios.post(api_url+apiEndpoint, param, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            params: {
+                contentIn: contentIn
+            }
+        });
+
+        return response.status;
+    } catch(error) {
+        console.error('Error updating document', error);
+        throw error;
+    }
+};
