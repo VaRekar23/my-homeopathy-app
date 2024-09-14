@@ -38,7 +38,7 @@ function App() {
       renderComponent();
     }
     
-  }, [activeComponent]);
+  }, [activeComponent, isAdmin]);
 
   const renderComponent = () => {
     switch (activeComponent) {
@@ -89,7 +89,7 @@ function App() {
     
           <Container>
             <Box sx={{ my: 2 }}>
-              {isAdmin ? (renderAdminComponent) : (renderComponent())}
+              {isAdmin ? renderAdminComponent() : renderComponent()}
             </Box>
           </Container>
 

@@ -1,7 +1,7 @@
 import { Box, Button, TextField, Typography } from '@mui/material';
 import React, {useState} from 'react';
 
-function Login({setIsAdmin, handleClose}) {
+function Login({setIsAdmin, handleClose, width}) {
     const [phone, setPhone] = useState('');
     const [otp, setOTP] = useState('');
     const [isOtpSent, setIsOtpSent] = useState(false);
@@ -40,7 +40,7 @@ function Login({setIsAdmin, handleClose}) {
                 top: '50%', 
                 left: '50%', 
                 transform: 'translate(-50%, -50%)', 
-                width: 400,
+                width: {width},
                 bgcolor: 'background.paper', 
                 borderRadius: 2,
                 border: '2px solid #000', 

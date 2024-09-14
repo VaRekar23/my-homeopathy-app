@@ -37,6 +37,7 @@ function About({uiDetails}) {
 
                 <Container className='clinic-map'>
                     <iframe 
+                        title="Map"
                         src={uiDetails.map_url} 
                         width="600" 
                         height="450" 
