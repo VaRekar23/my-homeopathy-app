@@ -9,6 +9,7 @@ import { fetchDataWithParam } from './Helper/ApiHelper';
 import CircularProgress from '@mui/material/CircularProgress';
 import Footer from './Header/Footer';
 import HomeAdmin from './Admin/Home/HomeAdmin';
+import AboutAdmin from './Admin/About/AboutAdmin';
 
 function App() {
   const [uiDetails, setUiDetails] = useState([]);
@@ -60,7 +61,7 @@ function App() {
       case 'Consultation':
         return <Consultation />;
       case 'About':
-        return <About uiDetails={uiDetails.about} />;
+        return <AboutAdmin uiDetails={uiDetails.about} />;
       default:
         return <HomeAdmin uiDetails={uiDetails.home} />;
     }
