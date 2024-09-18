@@ -60,3 +60,18 @@ export const updateUIData = async(apiEndpoint, param, contentIn) => {
         throw error;
     }
 };
+
+export const storeTreatmentDetails = async(apiEndpoint, param) => {
+    try {
+        const response = await axios.post(api_url+apiEndpoint, param, {
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+
+        return response.status;
+    } catch(error) {
+        console.error('Error updating document', error);
+        throw error;
+    }
+}

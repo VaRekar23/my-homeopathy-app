@@ -10,6 +10,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Footer from './Header/Footer';
 import HomeAdmin from './Admin/Home/HomeAdmin';
 import AboutAdmin from './Admin/About/AboutAdmin';
+import ConsultationAdmin from './Admin/Consultation/ConsultationAdmin';
 
 function App() {
   const [uiDetails, setUiDetails] = useState([]);
@@ -59,7 +60,7 @@ function App() {
       case 'Home':
         return <HomeAdmin uiDetails={uiDetails.home} />;
       case 'Consultation':
-        return <Consultation />;
+        return <ConsultationAdmin />;
       case 'About':
         return <AboutAdmin uiDetails={uiDetails.about} />;
       default:
