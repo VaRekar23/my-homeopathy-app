@@ -28,13 +28,16 @@ function ConsultationAdmin() {
 
     const handleAddParent = () => {
         const lastIndex = treatmentDetails.length>0 ? treatmentDetails[treatmentDetails.length-1].id : -1;
-        setTreatmentDetails([...treatmentDetails, {id: String(parseInt(lastIndex,10)+1), image: '', name: '', subCategoryList : [{id: String(parseInt(lastIndex,10)+1)+'0', categoryId: String(parseInt(lastIndex,10)+1), name: ''}]}]);
+        setTreatmentDetails([...treatmentDetails, {id: String(parseInt(lastIndex,10)+1), image: '', name: '', subCategoryList : [{id: String(parseInt(lastIndex,10)+1)+'-0', categoryId: String(parseInt(lastIndex,10)+1), name: ''}]}]);
     };
 
     const handleAddChild = (parentIndex) => {
         const newTreatmentDetails = [...treatmentDetails];
         const lastIndex = newTreatmentDetails[parentIndex].subCategoryList[newTreatmentDetails[parentIndex].subCategoryList.length-1].id;
-        const newSubCategoryList = {id: String(parentIndex)+String(parseInt(lastIndex,10)+1), categoryId: parentIndex, name: ''};
+        const parts = lastIndex.split('-');
+        const newIndex = parseInt(parts[1])+1;
+        console.log('ChildIndex', parentIndex+'-'+newIndex);
+        const newSubCategoryList = {id: parentIndex+'-'+newIndex, categoryId: parentIndex, name: ''};
         newTreatmentDetails[parentIndex].subCategoryList.push(newSubCategoryList);
         setTreatmentDetails(newTreatmentDetails);
     };
