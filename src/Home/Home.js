@@ -6,6 +6,7 @@ import TreatmentProvided from './TreatmentProvided';
 import CustomerReview from './CustomerReview';
 import { fetchData } from '../Helper/ApiHelper';
 import './Home.css';
+import ErrorPage from '../ErrorPage';
 
 function Home({uiDetails}) {
     const [homeDetails, setHomeDetails] = useState([]);
@@ -17,7 +18,8 @@ function Home({uiDetails}) {
             const homeData = await fetchData('home-details');
             setHomeDetails(homeData);
           } catch(error) {
-            console.error('Error fetching documents', error);
+            console.log('Error fetching documents', error);
+            return (<ErrorPage />);
           } finally {
             setIsLoading(false);
           }

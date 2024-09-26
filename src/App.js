@@ -11,6 +11,7 @@ import Footer from './Header/Footer';
 import HomeAdmin from './Admin/Home/HomeAdmin';
 import AboutAdmin from './Admin/About/AboutAdmin';
 import ConsultationAdmin from './Admin/Consultation/ConsultationAdmin';
+import ErrorPage from './ErrorPage';
 
 function App() {
   const [uiDetails, setUiDetails] = useState([]);
@@ -24,7 +25,8 @@ function App() {
         const uiData = await fetchDataWithParam('ui-details', 'english');
         setUiDetails(uiData);
       } catch(error) {
-        console.error('Error fetching documents', error);
+        console.log('Error fetching documents', error);
+        return (<ErrorPage />);
       } finally {
         setIsLoading(false);
       }

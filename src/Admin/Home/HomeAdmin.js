@@ -44,7 +44,6 @@ function HomeAdmin({uiDetails}) {
             try {
               const uiData = await fetchDataWithParam('ui-details', 'english');
               setUpdatedUiDetails(uiData.home);
-              console.log('UI Data', uiData.home);
             } catch(error) {
               console.error('Error fetching documents', error);
             }

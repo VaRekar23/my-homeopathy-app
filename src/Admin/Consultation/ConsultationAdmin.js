@@ -1,9 +1,10 @@
 import React, {useState, useEffect} from 'react';
-import { fetchData, storeTreatmentDetails } from '../../Helper/ApiHelper';
+import { fetchData, storeData } from '../../Helper/ApiHelper';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Button, CircularProgress, Grid, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import TreatmentDetails from './TreatmentDetails';
 import SaveIcon from '@mui/icons-material/Save';
+import QuestionDetails from './QuestionDetails';
 
 function ConsultationAdmin() {
     const [treatmentDetails, setTreatmentDetails] = useState([]);
@@ -11,10 +12,9 @@ function ConsultationAdmin() {
     const [status, setStatus] = useState('');
 
     useEffect(() => {
-        const getUIDetails = async () => {
+        const getTreatmentDetails = async () => {
             try {
                 const treatments = await fetchData('get-treatments');
-                console.log('Treatment DB', treatments);
                 setTreatmentDetails(treatments);
             } catch(error) {
                 console.error('Error fetching documents', error);
@@ -23,7 +23,7 @@ function ConsultationAdmin() {
             }
         };
         
-        getUIDetails();
+        getTreatmentDetails();
     }, []);
 
     const handleAddParent = () => {
@@ -36,7 +36,6 @@ function ConsultationAdmin() {
         const lastIndex = newTreatmentDetails[parentIndex].subCategoryList[newTreatmentDetails[parentIndex].subCategoryList.length-1].id;
         const parts = lastIndex.split('-');
         const newIndex = parseInt(parts[1])+1;
-        console.log('ChildIndex', parentIndex+'-'+newIndex);
         const newSubCategoryList = {id: parentIndex+'-'+newIndex, categoryId: parentIndex, name: ''};
         newTreatmentDetails[parentIndex].subCategoryList.push(newSubCategoryList);
         setTreatmentDetails(newTreatmentDetails);
@@ -70,9 +69,8 @@ function ConsultationAdmin() {
     };
 
     const onSaveClick = async(e) => {
-        console.log('Treatment', treatmentDetails);
         setIsLoading(true);
-        const response = storeTreatmentDetails('store-treatments', treatmentDetails);
+        const response = storeData('store-treatments', treatmentDetails);
         setStatus(response);
     };
 
@@ -113,6 +111,16 @@ function ConsultationAdmin() {
                                             handleChildOnChange={handleChildOnChange}
                                             handleRemoveChild={handleRemoveChild}
                                             handleAddChild={handleAddChild} />
+                        </AccordionDetails>
+                    </Accordion>
+                </Grid>
+                <Grid item xs={12} key={1}>
+                    <Accordion>
+                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                            <Typography variant='h5'>Add Questions</Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                            <QuestionDetails treatmentDetails={treatmentDetails} />
                         </AccordionDetails>
                     </Accordion>
                 </Grid>

@@ -61,7 +61,7 @@ export const updateUIData = async(apiEndpoint, param, contentIn) => {
     }
 };
 
-export const storeTreatmentDetails = async(apiEndpoint, param) => {
+export const storeData = async(apiEndpoint, param) => {
     try {
         const response = await axios.post(api_url+apiEndpoint, param, {
             headers: {
