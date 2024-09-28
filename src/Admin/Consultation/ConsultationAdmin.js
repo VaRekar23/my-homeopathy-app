@@ -5,6 +5,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import TreatmentDetails from './TreatmentDetails';
 import SaveIcon from '@mui/icons-material/Save';
 import QuestionDetails from './QuestionDetails';
+import ReviewQuestions from './ReviewQuestions';
 
 function ConsultationAdmin() {
     const [treatmentDetails, setTreatmentDetails] = useState([]);
@@ -121,6 +122,16 @@ function ConsultationAdmin() {
                         </AccordionSummary>
                         <AccordionDetails>
                             <QuestionDetails treatmentDetails={treatmentDetails} />
+                        </AccordionDetails>
+                    </Accordion>
+                </Grid>
+                <Grid item xs={12} key={2}>
+                    <Accordion>
+                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                            <Typography variant='h5'>Review Questions</Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                            <ReviewQuestions treatmentDetails={treatmentDetails} />
                         </AccordionDetails>
                     </Accordion>
                 </Grid>
