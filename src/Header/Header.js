@@ -6,6 +6,8 @@ import './Header.css';
 import Login from '../Login/Login';
 import { fetchMenuItem } from '../Helper/ApiHelper';
 import { AccountCircle } from '@mui/icons-material';
+import { signOut } from 'firebase/auth';
+import { auth } from '../Helper/FirebaseConfig';
 
 function Header({headerDetails, menuDetails, setActiveComponent, setIsAdmin}) {
     const [menuItem, setMenuItem] = useState(menuDetails);
@@ -35,10 +37,14 @@ function Header({headerDetails, menuDetails, setActiveComponent, setIsAdmin}) {
     const handleUserMenuClose = (component) => {
         setAnchorElUser(null);
         if (component==='Logout') {
-            setMenuItem(menuDetails);
-            setUserMenuSite(<MenuItem className='custom-primary-menu' onClick={handleLoginOpen}>Sign In</MenuItem>);
-            setUserMenuMobile(<MenuItem onClick={handleLoginOpen}>Sign In</MenuItem>);
-            setIsAdmin(false);
+            signOut(auth).then(() => {
+                setMenuItem(menuDetails);
+                setUserMenuSite(<MenuItem className='custom-primary-menu' onClick={handleLoginOpen}>Sign In</MenuItem>);
+                setUserMenuMobile(<MenuItem onClick={handleLoginOpen}>Sign In</MenuItem>);
+                setIsAdmin(false);
+            }).catch((error) => {
+                console.log('Signout error', error);
+            });
         } else {
             setActiveComponent(component);
         }
@@ -120,7 +126,7 @@ function Header({headerDetails, menuDetails, setActiveComponent, setIsAdmin}) {
         <Modal open={open} onClose={handleLoginClose} >
             {isMobile ? 
                 (<Login setIsAdmin={handleLoginSuccess} handleClose={handleLoginClose} width={'90%'}/>) : 
-                (<Login setIsAdmin={handleLoginSuccess} handleClose={handleLoginClose} width={'400px'} />)}
+                (<Login setIsAdmin={handleLoginSuccess} handleClose={handleLoginClose} width={'600px'} />)}
             
         </Modal>
         </>

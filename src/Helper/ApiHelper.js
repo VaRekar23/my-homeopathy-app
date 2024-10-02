@@ -74,4 +74,19 @@ export const storeData = async(apiEndpoint, param) => {
         console.error('Error updating document', error);
         throw error;
     }
-}
+};
+
+export const fetchUserData = async(apiEndpoint, param) => {
+    try {
+        const response = await axios.get(api_url+apiEndpoint, {
+            params: {
+                userId: param
+            }
+        });
+
+        return response.data;
+    } catch(error) {
+        console.error('Error fetching documents', error);
+        throw error;
+    }
+};
