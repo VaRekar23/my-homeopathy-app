@@ -9,6 +9,8 @@ import { storeData } from '../Helper/ApiHelper';
 
 function AddNewUser({phoneNumber, user, handleClose, setIsAdmin}) {
     const [userData, setUserData] = useState({
+        userId: user,
+        isAdmin: false,
         phone: phoneNumber,
         name: '',
         dob: null,
@@ -23,6 +25,7 @@ function AddNewUser({phoneNumber, user, handleClose, setIsAdmin}) {
 
     useEffect(() => {
         if (status!=='') {
+            console.log('Status', status);
             setIsAdmin(false);
             handleClose();
         }
@@ -59,6 +62,7 @@ function AddNewUser({phoneNumber, user, handleClose, setIsAdmin}) {
         }
 
         const response = storeData('store-user', request);
+        sessionStorage.setItem('user', cipherData);
         setStatus(response);
     };
 

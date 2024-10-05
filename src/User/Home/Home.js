@@ -4,9 +4,9 @@ import { Box, CircularProgress, Container, Paper, Rating, Typography } from '@mu
 import CommonDisease from './CommonDisease';
 import TreatmentProvided from './TreatmentProvided';
 import CustomerReview from './CustomerReview';
-import { fetchData } from '../Helper/ApiHelper';
+import { fetchData } from '../../Helper/ApiHelper';
 import './Home.css';
-import ErrorPage from '../ErrorPage';
+import ErrorPage from '../../ErrorPage';
 
 function Home({uiDetails}) {
     const [homeDetails, setHomeDetails] = useState([]);

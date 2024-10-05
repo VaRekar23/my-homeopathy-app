@@ -2,7 +2,7 @@ import { Button, TextField } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 import SaveIcon from '@mui/icons-material/Save';
 import { Cancel, EditNote } from '@mui/icons-material';
-import Home from '../../Home/Home';
+import Home from '../../User/Home/Home';
 import './HomeAdmin.css';
 import { fetchDataWithParam, updateUIData } from '../../Helper/ApiHelper';
 

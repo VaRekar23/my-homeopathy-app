@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { fetchDataWithParam, updateUIData } from "../../Helper/ApiHelper";
-import About from "../../About/About";
+import About from "../../User/About/About";
 import { Button, IconButton, Paper, TextField } from "@mui/material";
 import { AddCircle, Cancel, EditNote } from "@mui/icons-material";
 import SaveIcon from '@mui/icons-material/Save';

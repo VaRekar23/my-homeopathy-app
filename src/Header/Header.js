@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AppBar, Toolbar, IconButton, Menu, MenuItem, useMediaQuery, Box, Modal } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useTheme } from '@mui/material/styles';
@@ -8,8 +8,9 @@ import { fetchMenuItem } from '../Helper/ApiHelper';
 import { AccountCircle } from '@mui/icons-material';
 import { signOut } from 'firebase/auth';
 import { auth } from '../Helper/FirebaseConfig';
+import { decryptData } from '../Helper/Secure';
 
-function Header({headerDetails, menuDetails, setActiveComponent, setIsAdmin}) {
+function Header({userDetails, menuDetails, setActiveComponent, setIsAdmin}) {
     const [menuItem, setMenuItem] = useState(menuDetails);
     const [anchorEl, setAnchorEl] = useState(null);
     const [anchorElUser, setAnchorElUser] = useState(null);
@@ -17,6 +18,14 @@ function Header({headerDetails, menuDetails, setActiveComponent, setIsAdmin}) {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const [open, setOpen] = useState(false);
+
+    useEffect(() => {
+        if (userDetails!==null) {
+            const user = decryptData(userDetails);
+            console.log('Decrypted User',user);
+            updateMenuForUsers(user.isAdmin);
+        }
+    }, []);
 
     const handleLoginOpen = () => setOpen(true);
     const handleLoginClose = () => setOpen(false);
@@ -42,6 +51,7 @@ function Header({headerDetails, menuDetails, setActiveComponent, setIsAdmin}) {
                 setUserMenuSite(<MenuItem className='custom-primary-menu' onClick={handleLoginOpen}>Sign In</MenuItem>);
                 setUserMenuMobile(<MenuItem onClick={handleLoginOpen}>Sign In</MenuItem>);
                 setIsAdmin(false);
+                sessionStorage.removeItem('user');
             }).catch((error) => {
                 console.log('Signout error', error);
             });
@@ -49,7 +59,12 @@ function Header({headerDetails, menuDetails, setActiveComponent, setIsAdmin}) {
             setActiveComponent(component);
         }
     }
-    const handleLoginSuccess = async (isAdmin) => {
+
+    const handleLoginSuccess = (isAdmin) => {
+        updateMenuForUsers(isAdmin);
+    }
+
+    const updateMenuForUsers = async (isAdmin) => {
         setIsAdmin(isAdmin);
 
         const menu = await fetchMenuItem('header-details', isAdmin ? 'admin' : 'user');
@@ -74,7 +89,7 @@ function Header({headerDetails, menuDetails, setActiveComponent, setIsAdmin}) {
                 <MenuItem onClick={() => handleUserMenuClose('Logout')}>LogOut</MenuItem>
             </>
         );
-    }
+    };
 
     const [userMenuMobile, setUserMenuMobile] = useState(<MenuItem onClick={handleLoginOpen}>Sign In</MenuItem>);
     const [userMenuSite, setUserMenuSite] = useState(<MenuItem className='custom-primary-menu' onClick={handleLoginOpen}>Sign In</MenuItem>);

@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Box, Toolbar, Container } from '@mui/material';
 import Header from './Header/Header';
-import Home from './Home/Home';
+import Home from './User/Home/Home';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Consultation from './Consultation/Consultation';
-import About from './About/About';
+import Consultation from './User/Consultation/Consultation';
+import About from './User/About/About';
 import { fetchDataWithParam } from './Helper/ApiHelper';
 import CircularProgress from '@mui/material/CircularProgress';
 import Footer from './Header/Footer';
@@ -12,12 +12,14 @@ import HomeAdmin from './Admin/Home/HomeAdmin';
 import AboutAdmin from './Admin/About/AboutAdmin';
 import ConsultationAdmin from './Admin/Consultation/ConsultationAdmin';
 import ErrorPage from './ErrorPage';
+import Dashboard from './Admin/Dashboard/Dashboard';
 
 function App() {
   const [uiDetails, setUiDetails] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeComponent, setActiveComponent] = useState('Home');
   const [isAdmin, setIsAdmin] = useState(false);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const getUIDetails = async () => {
@@ -33,6 +35,11 @@ function App() {
     };
 
     getUIDetails();
+    if (sessionStorage.getItem('user')!==null) {
+      setUser(sessionStorage.getItem('user'));
+    } else {
+      
+    }
   }, []);
 
   useEffect(() => {
@@ -59,6 +66,8 @@ function App() {
 
   const renderAdminComponent = () => {
     switch (activeComponent) {
+      case 'Dashboard':
+        return <Dashboard userDetails={user} />;
       case 'Home':
         return <HomeAdmin uiDetails={uiDetails.home} />;
       case 'Consultation':
@@ -66,7 +75,7 @@ function App() {
       case 'About':
         return <AboutAdmin uiDetails={uiDetails.about} />;
       default:
-        return <HomeAdmin uiDetails={uiDetails.home} />;
+        return <Dashboard userDetails={user} />;
     }
   }
   
@@ -88,7 +97,7 @@ function App() {
       <>
         {uiDetails ? (
           <Router>
-          <Header menuDetails={uiDetails.menu} setActiveComponent={setActiveComponent} setIsAdmin={setIsAdmin} />
+          <Header userDetails={user} menuDetails={uiDetails.menu} setActiveComponent={setActiveComponent} setIsAdmin={setIsAdmin} />
           <Toolbar />
     
           <Container>

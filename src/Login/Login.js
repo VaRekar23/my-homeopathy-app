@@ -67,6 +67,7 @@ function Login({setIsAdmin, handleClose, width}) {
         try {
             const users = await fetchUserData('get-users', userId);
             if (users.length!==0) {
+                sessionStorage.setItem('user', users.encryptedData);
                 setIsAdmin(users.isAdmin);
                 handleClose();
             } else {
