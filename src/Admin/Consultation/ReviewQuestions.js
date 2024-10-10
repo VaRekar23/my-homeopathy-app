@@ -14,7 +14,7 @@ function ReviewQuestions({treatmentDetails}) {
         questionName: '',
         options: [{optionName:'', childQuestionName:'', childQuestionId:''}]
     });
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [status, setStatus] = useState('');
     const [questionDetails, setQuestionDetails] = useState([]);
     const [dataMissing, setDataMissing] = useState(false);
@@ -27,6 +27,8 @@ function ReviewQuestions({treatmentDetails}) {
                 setQuestionDetails(questions);
             } catch(error) {
                 console.error('Error fetching question detials', error);
+            } finally {
+                setIsLoading(false);
             }
         }
 
