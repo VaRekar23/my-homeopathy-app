@@ -6,10 +6,10 @@ import { decryptData } from '../../Helper/Secure';
 import { Alert, Button, Divider, FormControl, Grid, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
 
 
-function Consultation ()  {
+function Consultation ({consultationData})  {
     const [formData, setFormData] = useState({
-        treatmentId: '',
-        subTreatmentId: '',
+        treatmentId: consultationData.treatmentId,
+        subTreatmentId: consultationData.subTreatmentId,
         userId: '',
         additionalInfo: '',
         questions: []
@@ -18,6 +18,7 @@ function Consultation ()  {
     const [isLoading, setIsLoading] = useState(true);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isDataSaved, setIsDataSaved] = useState(false);
+    const [isVisible, setIsVisible] = useState(false);
     const [childUsers, setChildUsers] = useState([]);
     const [userData, setUserData] = useState(null);
     const [treatmentDetails, setTreatmentDetails] = useState([]);
@@ -33,6 +34,16 @@ function Consultation ()  {
                 setTreatmentDetails(treatments);
                 const questions = await fetchData('get-questions');
                 setQuestionDetails(questions);
+
+                if (formData.subTreatmentId !== '') {
+                    setFormData({...formData, 'questions': []});
+                    setVisibleQuestions([treatments[formData.treatmentId].subCategoryList.find(subTreat => subTreat.id===formData.subTreatmentId).questionId]);
+                    if (treatments[formData.treatmentId].subCategoryList.find(subTreat => subTreat.id===formData.subTreatmentId).questionId !== '') {
+                        setIsVisible(false);
+                    } else {
+                        setIsVisible(true);
+                    }
+                }
             } catch(error) {
                 console.error('Error fetching documents', error);
             } finally {
@@ -85,6 +96,11 @@ function Consultation ()  {
         if (name === 'subTreatmentId') {
             setFormData({...formData, 'questions': []});
             setVisibleQuestions([treatmentDetails[formData.treatmentId].subCategoryList.find(subTreat => subTreat.id===value).questionId]);
+            if (treatmentDetails[formData.treatmentId].subCategoryList.find(subTreat => subTreat.id===value).questionId !== '') {
+                setIsVisible(false);
+            } else {
+                setIsVisible(true);
+            }
         };
         setFormData({
             ...formData,
@@ -115,6 +131,8 @@ function Consultation ()  {
     
         if (childQuestionID) {
             setVisibleQuestions((prev) => [...prev, childQuestionID]);
+        } else {
+            setIsVisible(true);
         }
     };
 
@@ -237,24 +255,25 @@ function Consultation ()  {
 
                     {visibleQuestions.map((questionID) => renderQuestion(questionID))}
 
-                    {formData.subTreatmentId !== '' && (
+                    {isVisible && (
+                        <>
                         <TextField label="Please provide any additional information"
-                                    variant="outlined"
-                                    fullWidth
-                                    name='additionalInfo'
-                                    value={formData.additionalInfo}
-                                    onChange={handleInputChange}
-                                    sx={{ marginTop: 2 }} />
+                        variant="outlined"
+                        fullWidth
+                        name='additionalInfo'
+                        value={formData.additionalInfo}
+                        onChange={handleInputChange}
+                        sx={{ marginTop: 2 }} />
+                        
+                        <Button variant='contained'
+                                color='primary'
+                                sx={{ marginTop: 2 }}
+                                onClick={handleSubmit} >
+                            Submit
+                        </Button>
+                        </>
                     )}
-
-                    <Button
-                        variant='contained'
-                        color='primary'
-                        sx={{ marginTop: 2 }}
-                        onClick={handleSubmit}
-                    >
-                        Submit
-                    </Button>
+                    
                 </Box>
             </>
         );

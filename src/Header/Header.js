@@ -22,7 +22,6 @@ function Header({userDetails, menuDetails, setActiveComponent, setIsAdmin}) {
     useEffect(() => {
         if (userDetails!==null) {
             const user = decryptData(userDetails);
-            console.log('Decrypted User',user);
             updateMenuForUsers(user.isAdmin);
         }
     }, []);

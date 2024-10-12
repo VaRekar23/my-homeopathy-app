@@ -8,7 +8,7 @@ import { fetchData } from '../../Helper/ApiHelper';
 import './Home.css';
 import ErrorPage from '../../ErrorPage';
 
-function Home({uiDetails}) {
+function Home({uiDetails, setActiveComponent, setConsultationData}) {
     const [homeDetails, setHomeDetails] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -70,13 +70,6 @@ function Home({uiDetails}) {
                 {uiDetails.specialize}
             </Typography>
 
-            <Typography variant='h5' gutterBottom style={{marginTop: '20px'}}>
-                {uiDetails.header_para2}
-            </Typography>
-            <Typography variant='subtitle2'>
-                {uiDetails.body_para2}
-            </Typography>
-
             {/* Partition Common Remedies*/}
             <Paper className='custom-paper' elevation={0}>
                 <Typography variant='h6' className='custom-center'>
@@ -92,10 +85,17 @@ function Home({uiDetails}) {
                 </CenteredContainer>
             </Paper>
 
+            <Typography variant='h5' gutterBottom style={{marginTop: '20px'}}>
+                {uiDetails.header_para2}
+            </Typography>
+            <Typography variant='subtitle2'>
+                {uiDetails.body_para2}
+            </Typography>
+
             { /* Partition Treatments Provided*/}
             <Paper className='custom-paper' elevation={0}>
                 <Typography variant='h6' className='custom-center'>{uiDetails.treatment_provided}</Typography>
-                <TreatmentProvided treatmentCategory={homeDetails.treatments} />
+                <TreatmentProvided treatmentCategory={homeDetails.treatments} setActiveComponent={setActiveComponent} setConsultationData={setConsultationData}/>
             </Paper>
 
             { /* Partition Reviews*/}

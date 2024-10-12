@@ -20,6 +20,7 @@ function App() {
   const [activeComponent, setActiveComponent] = useState('Home');
   const [isAdmin, setIsAdmin] = useState(false);
   const [user, setUser] = useState(null);
+  const [consultationData, setConsultationData] = useState({ treatmentId: '', subTreatmentId: '' });
 
   useEffect(() => {
     const getUIDetails = async () => {
@@ -54,9 +55,9 @@ function App() {
   const renderComponent = () => {
     switch (activeComponent) {
       case 'Home':
-        return <Home uiDetails={uiDetails.home} />;
+        return <Home uiDetails={uiDetails.home} setActiveComponent={setActiveComponent} setConsultationData={setConsultationData} />;
       case 'Consultation':
-        return <Consultation />;
+        return <Consultation consultationData={consultationData}/>;
       case 'About':
         return <About uiDetails={uiDetails.about} />;
       default:
