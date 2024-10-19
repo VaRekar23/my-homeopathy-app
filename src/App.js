@@ -13,6 +13,7 @@ import AboutAdmin from './Admin/About/AboutAdmin';
 import ConsultationAdmin from './Admin/Consultation/ConsultationAdmin';
 import ErrorPage from './ErrorPage';
 import Dashboard from './Admin/Dashboard/Dashboard';
+import Orders from './User/Orders/Orders';
 
 function App() {
   const [uiDetails, setUiDetails] = useState([]);
@@ -60,7 +61,10 @@ function App() {
         return <Consultation consultationData={consultationData}/>;
       case 'About':
         return <About uiDetails={uiDetails.about} />;
+      case 'My Orders':
+        return <Orders />;
       default:
+        console.log('ActiveComponent', activeComponent);
         return <Home uiDetails={uiDetails.home} />;
     }
   }
