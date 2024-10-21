@@ -14,6 +14,7 @@ import ConsultationAdmin from './Admin/Consultation/ConsultationAdmin';
 import ErrorPage from './ErrorPage';
 import Dashboard from './Admin/Dashboard/Dashboard';
 import Orders from './User/Orders/Orders';
+import OrdersAdmin from './Admin/Orders/OrdersAdmin';
 
 function App() {
   const [uiDetails, setUiDetails] = useState([]);
@@ -79,6 +80,8 @@ function App() {
         return <ConsultationAdmin />;
       case 'About':
         return <AboutAdmin uiDetails={uiDetails.about} />;
+      case 'Orders':
+        return <OrdersAdmin />;
       default:
         return <Dashboard userDetails={user} />;
     }

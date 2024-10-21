@@ -13,6 +13,7 @@ function AddNewUser({phoneNumber, user, handleClose, setIsAdmin}) {
         isAdmin: false,
         phone: phoneNumber,
         name: '',
+        occupation: '',
         dob: null,
         gender: '',
         building: '',
@@ -95,6 +96,8 @@ function AddNewUser({phoneNumber, user, handleClose, setIsAdmin}) {
                         </FormControl>
                 </Grid>
             </Grid>
+            <TextField label='Occupation' name='occupation' value={userData.occupation} 
+                        onChange={handleOnChange} fullWidth margin='normal' />
 
             <Box sx={{display:'flex', flexDirection: 'column', alignItems:'left', padding:2, border: '1px solid #ccc', borderRadius: '8px', width:'full', gap:2}}>
                 <TextField label='Building' name='building' value={userData.building} 

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Typography, Grid, Box, Rating, Card, CardContent } from '@mui/material';
+import { decryptData } from '../../Helper/Secure';
 
 
 function CustomerReview({customerRating, overallRating}) {
@@ -13,13 +14,12 @@ function CustomerReview({customerRating, overallRating}) {
                                             flexDirection: 'column',
                                             justifyContent: 'center',
                                             alignItems: 'center'}}>
-                                <Typography variant='h6'>{item.customerName}</Typography>
+                                <Typography variant='h6'>{decryptData(item.customerData).name}</Typography>
                                 <Rating name='customer-rating' value={item.ratings} readOnly sx={{ color: 'gold'}} />
                             </Box>
                             <Box>
                                 <Typography variant='body1'>{item.comments}</Typography>
-                                <Typography variant='body2'>Treatment: {item.treatmentCategory}</Typography>
-                                <Typography variant='body2'>{item.treatmentSubcategory}</Typography>
+                                <Typography variant='body2'>Treatment: {item.treatmentSubcategory}</Typography>
 
                                 {item.beforePhoto &&
                                 <>

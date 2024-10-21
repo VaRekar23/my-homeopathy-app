@@ -97,7 +97,7 @@ function Login({setIsAdmin, handleClose, width}) {
                     </Typography>
 
                     <form onSubmit={requestOtp} style={{ width: '100%', maxWidth: '400px' }}>
-                        <TextField label='Phone Number' variant='outlined' fullWidth margin='normal' value={phone} onChange={(e) => setPhone(e.target.value)} />
+                        <TextField label='Phone Number' variant='outlined' fullWidth margin='normal' value={phone} type='number' onChange={(e) => setPhone(e.target.value)} />
                         <Button type='submit' variant='contained' color='primary' fullWidth disabled={loading || phone.length!==10}>
                             {loading ? <CircularProgress size={24} /> : 'Send OTP'}
                         </Button>
@@ -107,7 +107,7 @@ function Login({setIsAdmin, handleClose, width}) {
             
                     {verificationId && (
                         <form onSubmit={verifyOtp} style={{ width: '100%', maxWidth: '400px', marginTop: '16px' }} >
-                            <TextField label='OTP' variant='outlined' fullWidth margin='normal' value={otp} onChange={(e) => setOTP(e.target.value)} />
+                            <TextField label='OTP' variant='outlined' fullWidth margin='normal' value={otp} type='number' onChange={(e) => setOTP(e.target.value)} />
                             <Button type='submit' variant='contained' color='primary' fullWidth disabled={loading || otp.length!==6}>
                                 {loading ? <CircularProgress size={24} /> : 'Verify OTP'}
                             </Button>
