@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Box, Toolbar, Container } from '@mui/material';
 import Header from './Header/Header';
 import Home from './User/Home/Home';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
 import Consultation from './User/Consultation/Consultation';
 import About from './User/About/About';
 import { fetchDataWithParam } from './Helper/ApiHelper';
@@ -15,11 +15,12 @@ import ErrorPage from './ErrorPage';
 import Dashboard from './Admin/Dashboard/Dashboard';
 import Orders from './User/Orders/Orders';
 import OrdersAdmin from './Admin/Orders/OrdersAdmin';
+import Feedback from './User/Orders/Feedback';
 
 function App() {
   const [uiDetails, setUiDetails] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeComponent, setActiveComponent] = useState('Home');
+  const [activeComponent, setActiveComponent] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
   const [user, setUser] = useState(null);
   const [consultationData, setConsultationData] = useState({ treatmentId: '', subTreatmentId: '' });
@@ -66,7 +67,7 @@ function App() {
         return <Orders />;
       default:
         console.log('ActiveComponent', activeComponent);
-        return <Home uiDetails={uiDetails.home} />;
+        return <Home uiDetails={uiDetails.home} setActiveComponent={setActiveComponent} setConsultationData={setConsultationData} />;
     }
   }
 
@@ -110,7 +111,12 @@ function App() {
     
           <Container>
             <Box sx={{ my: 2 }}>
-              {isAdmin ? renderAdminComponent() : renderComponent()}
+              <Routes>
+                <Route path='/feedback' element={<Feedback />} />
+                <Route path='/error' element={<ErrorPage />} />
+                <Route path='/' element={isAdmin ? renderAdminComponent() : renderComponent()} />
+              </Routes>
+              
             </Box>
           </Container>
 

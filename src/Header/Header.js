@@ -9,6 +9,7 @@ import { AccountCircle } from '@mui/icons-material';
 import { signOut } from 'firebase/auth';
 import { auth } from '../Helper/FirebaseConfig';
 import { decryptData } from '../Helper/Secure';
+import { useNavigate } from 'react-router-dom';
 
 function Header({userDetails, menuDetails, setActiveComponent, setIsAdmin}) {
     const [menuItem, setMenuItem] = useState(menuDetails);
@@ -18,6 +19,7 @@ function Header({userDetails, menuDetails, setActiveComponent, setIsAdmin}) {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const [open, setOpen] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (userDetails!==null) {
@@ -35,7 +37,8 @@ function Header({userDetails, menuDetails, setActiveComponent, setIsAdmin}) {
 
     const handleClose = (component) => {
         setAnchorEl(null);
-        setActiveComponent(component)
+        setActiveComponent(component);
+        navigate('/');
     }
 
     const handleUserMenu = (event) => {
@@ -61,6 +64,11 @@ function Header({userDetails, menuDetails, setActiveComponent, setIsAdmin}) {
 
     const handleLoginSuccess = (isAdmin) => {
         updateMenuForUsers(isAdmin);
+    }
+
+    const handleMenuClick = (item) => {
+        setActiveComponent(item);
+        navigate('/');
     }
 
     const updateMenuForUsers = async (isAdmin) => {
@@ -118,7 +126,7 @@ function Header({userDetails, menuDetails, setActiveComponent, setIsAdmin}) {
                 ) : (
                     <>
                         {Object.keys(menuItem).map((key) => (
-                            <MenuItem key={key} onClick={() => setActiveComponent(menuItem[key].item) }>{menuItem[key].item}</MenuItem>
+                            <MenuItem key={key} onClick={() => handleMenuClick(menuItem[key].item) }>{menuItem[key].item}</MenuItem>
                         ))}
                         {userMenuSite}
                         

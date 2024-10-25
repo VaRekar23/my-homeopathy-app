@@ -4,17 +4,18 @@ import { fetchData, fetchUserData, storeData } from '../../Helper/ApiHelper';
 import { Accordion, AccordionDetails, AccordionSummary, Alert, Box, Button, Card, CardContent, CircularProgress, Container, Divider, Grid, List, ListItem, Paper, Rating, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import dayjs from 'dayjs';
+import { useNavigate } from 'react-router-dom'
 
 function Orders () {
     const [userData, setUserData] = useState(null);
     const [orderDetails, setOrderDetails] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const getOrderDetails = async (userId) => {
             try {
                 const orders = await fetchUserData('get-orders', userId);
-                console.log('Orders', orders);
                 setOrderDetails(orders);
             } catch(error) {
                 console.error('Error fetching documents', error);
@@ -40,7 +41,7 @@ function Orders () {
 
     const handleFeedback = (orderId) => {
         const orderToUpdate = orderDetails[orderId];
-        console.log('Feedback ', orderToUpdate);
+        navigate('/feedback', { state: {orderId}});
     };
 
     const getStatusColor = (status) => {
@@ -73,6 +74,15 @@ function Orders () {
             case 'Payment Pending':
                 return (
                     <>
+                        {order.doctorComments && (
+                        <>
+                            <Divider style={{ margin: '10px 0' }} />
+                            <Typography variant="subtitle1">Doctor Comments</Typography>
+                            <Paper elevation={2} style={{ padding: '10px' }}>
+                                <Typography variant="body2">{order.doctorComments}</Typography>
+                            </Paper>
+                        </>
+                        )}
                         <Divider style={{ margin: '10px 0' }} />
                         <Typography variant="subtitle1">Payment Details</Typography>
                         <Paper elevation={2} style={{ padding: '10px' }}>
@@ -152,6 +162,15 @@ function Orders () {
     const renderPaymentDone = (order, index) => {
         return (
             <>
+                {order.doctorComments && (
+                <>
+                    <Divider style={{ margin: '10px 0' }} />
+                    <Typography variant="subtitle1">Doctor Comments</Typography>
+                    <Paper elevation={2} style={{ padding: '10px' }}>
+                        <Typography variant="body2">{order.doctorComments}</Typography>
+                    </Paper>
+                </>
+                )}
                 <Divider style={{ margin: '10px 0' }} />
                 <Typography variant="subtitle1">Payment Details</Typography>
                 <Paper elevation={2} style={{ padding: '10px' }}>

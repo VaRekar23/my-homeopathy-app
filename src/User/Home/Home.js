@@ -104,7 +104,7 @@ function Home({uiDetails, setActiveComponent, setConsultationData}) {
                 <Box className='custom-center'>
                     <Rating name='customer-rating' value={homeDetails.overall_feedback.rating} readOnly sx={{ color: 'gold'}} />
                     <Typography variant='body1'>
-                        {homeDetails.overall_feedback.rating} ratings of {homeDetails.overall_feedback.totalCount} reviews!
+                        {parseFloat(homeDetails.overall_feedback.rating).toFixed(2)} ratings of {homeDetails.overall_feedback.totalCount} reviews!
                     </Typography>
                 </Box>
                 <Typography variant='body1' className='custom-center'>{uiDetails.cure_count}</Typography>
