@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { decryptData } from '../../Helper/Secure';
 import { fetchData, fetchUserData, storeData } from '../../Helper/ApiHelper';
-import { Accordion, AccordionDetails, AccordionSummary, Alert, Box, Button, Card, CardContent, CircularProgress, Container, Divider, Grid, List, ListItem, Paper, Rating, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Alert, Box, Button, Card, CardContent, CircularProgress, Container, Divider, Grid, List, ListItem, Paper, Rating, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom'
@@ -9,14 +9,19 @@ import { useNavigate } from 'react-router-dom'
 function Orders () {
     const [userData, setUserData] = useState(null);
     const [orderDetails, setOrderDetails] = useState([]);
+    const [filteredOrders, setFilteredOrders] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
+    const [filterText, setFilterText] = useState('');
+    const consultationCharge = 100;
+    const deliveryCharge = 100;
 
     useEffect(() => {
         const getOrderDetails = async (userId) => {
             try {
                 const orders = await fetchUserData('get-orders', userId);
                 setOrderDetails(orders);
+                setFilteredOrders(orders);
             } catch(error) {
                 console.error('Error fetching documents', error);
             } finally {
@@ -29,6 +34,16 @@ function Orders () {
 
         setUserData(user);
     }, []);
+
+    const handleFilterChange = (event) => {
+        const value = event.target.value.toLowerCase();
+        setFilterText(value);
+        const filtered = orderDetails.filter(order => 
+            order.orderId.toString().includes(value) || 
+            order.status.toLowerCase().includes(value)
+        );
+        setFilteredOrders(filtered);
+    };
 
     const handlePayment = (orderId) => {
         const orderToUpdate = orderDetails[orderId];
@@ -43,6 +58,13 @@ function Orders () {
         const orderToUpdate = orderDetails[orderId];
         navigate('/feedback', { state: {orderId}});
     };
+
+    const invoiceSubtotal = (order) => {
+        return order.items.reduce((sum, item) => {
+            const itemAmount = parseFloat(item.price) || 0; // Handle invalid amounts as 0
+            return sum + itemAmount;
+        }, 0);
+    }
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -74,40 +96,13 @@ function Orders () {
             case 'Payment Pending':
                 return (
                     <>
-                        {order.doctorComments && (
-                        <>
-                            <Divider style={{ margin: '10px 0' }} />
-                            <Typography variant="subtitle1">Doctor Comments</Typography>
-                            <Paper elevation={2} style={{ padding: '10px' }}>
-                                <Typography variant="body2">{order.doctorComments}</Typography>
-                            </Paper>
-                        </>
-                        )}
-                        <Divider style={{ margin: '10px 0' }} />
-                        <Typography variant="subtitle1">Payment Details</Typography>
-                        <Paper elevation={2} style={{ padding: '10px' }}>
-                            <List>
-                                {order.items.map((item, itemIndex) => (
-                                    <ListItem key={itemIndex}>
-                                        <Typography variant="body2">
-                                            <strong>{item.item}:</strong> ₹{item.amount}
-                                        </Typography>
-                                    </ListItem>
-                                ))}
-                            </List>
-                            <Divider style={{ margin: '10px 0' }} />
-                            <Typography variant="body2">
-                                <strong>Total Amount:</strong> ₹{order.totalAmount}
-                            </Typography>
-
-                            <Button variant='outlined' color='primary' onClick={() => handlePayment(index)}>Pay ₹{order.totalAmount}</Button>
-                        </Paper>
+                        {renderPayment(order, index, false)}
                     </>
                 );
             case 'Payment Done':
                 return (
                     <>
-                        {renderPaymentDone(order, index)}
+                        {renderPayment(order, index, true)}
                     </>
                 );
             case 'Medicine Courier':
@@ -128,14 +123,15 @@ function Orders () {
                     <>
                         {renderMedicineCourier(order, index)}
 
-                        <Divider style={{ margin: '10px 0' }} />
-                        <Typography variant="subtitle1">Feedback</Typography>
-                        <Paper elevation={2} style={{ padding: '10px' }}>
-                            <Typography variant="body2">
-                                <b>Comments:</b> {order.feedbackComments}
-                            </Typography>
-                            <Rating name='customer-rating' value={order.feedbackRating} readOnly sx={{ color: 'gold'}} />
-                        </Paper>
+                        <Typography variant="subtitle1" sx={{marginTop:'10px'}}><b>Feedback</b></Typography>
+                        <Card variant='outlined'>
+                            <CardContent>
+                                <Typography variant="body2">
+                                    <b>Comments:</b> {order.feedbackComments}
+                                </Typography>
+                                <Rating name='customer-rating' value={order.feedbackRating} readOnly sx={{ color: 'gold'}} />
+                            </CardContent>
+                        </Card>
                     </>
                 );
             case 'Delete':
@@ -143,11 +139,12 @@ function Orders () {
                     <>
                         {order.doctorComments && (
                         <>
-                            <Divider style={{ margin: '10px 0' }} />
-                            <Typography variant="subtitle1">Doctor Comments</Typography>
-                            <Paper elevation={2} style={{ padding: '10px' }}>
-                                <Typography variant="body2">{order.doctorComments}</Typography>
-                            </Paper>
+                            <Typography variant="subtitle1" sx={{marginTop:'10px'}}><b>Doctor Comments</b></Typography>
+                            <Card variant='outlined'>
+                                <CardContent>
+                                    <Typography variant="body2">{order.doctorComments}</Typography>
+                                </CardContent>
+                            </Card>
                         </>
                         )}
                     </>
@@ -159,52 +156,99 @@ function Orders () {
         }
     }
 
-    const renderPaymentDone = (order, index) => {
+    const renderPayment = (order, index, isPaymentDone) => {
         return (
             <>
                 {order.doctorComments && (
                 <>
-                    <Divider style={{ margin: '10px 0' }} />
-                    <Typography variant="subtitle1">Doctor Comments</Typography>
-                    <Paper elevation={2} style={{ padding: '10px' }}>
-                        <Typography variant="body2">{order.doctorComments}</Typography>
-                    </Paper>
+                    <Typography variant="subtitle1" sx={{marginTop:'10px'}}><b>Doctor Comments</b></Typography>
+                    <Card variant='outlined'>
+                        <CardContent>
+                            <Typography variant="body2">{order.doctorComments}</Typography>
+                        </CardContent>
+                    </Card>
                 </>
                 )}
-                <Divider style={{ margin: '10px 0' }} />
-                <Typography variant="subtitle1">Payment Details</Typography>
-                <Paper elevation={2} style={{ padding: '10px' }}>
-                    <List>
-                        {order.items.map((item, itemIndex) => (
-                            <ListItem key={itemIndex}>
-                                <Typography variant="body2">
-                                    <strong>{item.item}:</strong> ₹{item.amount}
-                                </Typography>
-                            </ListItem>
-                        ))}
-                    </List>
-                    <Typography variant="body2">
-                        <strong>Total Amount:</strong> ₹{order.totalAmount}
-                    </Typography>
-                        
-                    <Divider style={{ margin: '10px 0' }} />
-                    <Typography variant="body2"><b>Payment ID:</b> {order.paymentId}</Typography>
-                    <Typography variant="body2"><b>Payment Date:</b> {order.paymentDate}</Typography>
-                </Paper>
+
+                <Accordion sx={{marginTop:'10px'}}>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                        <Box display='flex' width="100%" justifyContent="space-between" alignItems="center">
+                            <Typography variant="subtitle1">Payment Details</Typography>
+
+                            {isPaymentDone ? 
+                                <Typography variant="subtitle1">₹{order.totalAmount}</Typography> :
+                                <Button variant='outlined' color='primary' onClick={() => handlePayment(index)}>Pay ₹{order.totalAmount}</Button>
+                            }
+                        </Box>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        <Grid container direction='column'>
+                        <TableContainer component={Paper}>
+                            <Table aria-label='spanning table'>
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>Desc</TableCell>
+                                        <TableCell align='right'>Amount</TableCell>
+                                        <TableCell align='right'>Qty</TableCell>
+                                        <TableCell align='right'>Sum</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {order.items.map((item, itemIndex) => (
+                                        <TableRow key={itemIndex}>
+                                            <TableCell>{item.item}</TableCell>
+                                            <TableCell align='right'>{item.amount}</TableCell>
+                                            <TableCell align='right'>{item.qty}</TableCell>
+                                            <TableCell align='right'>{item.price}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                    <TableRow>
+                                        <TableCell rowSpan={4} />
+                                        <TableCell colSpan={2}>Subtotal</TableCell>
+                                        <TableCell align='right'>{invoiceSubtotal(order)}</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell colSpan={2}>Consultation Charges</TableCell>
+                                        <TableCell align='right'>{consultationCharge}</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell colSpan={2}>Delivery Charges</TableCell>
+                                        <TableCell align='right'>{deliveryCharge}</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell colSpan={2}>Total</TableCell>
+                                        <TableCell align='right'>₹{order.totalAmount}</TableCell>
+                                    </TableRow>
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+
+                        {isPaymentDone &&
+                            <Card variant='outlined'>
+                                <CardContent>
+                                    <Typography variant="body2"><b>Payment ID:</b> {order.paymentId}</Typography>
+                                    <Typography variant="body2"><b>Payment Date:</b> {order.paymentDate}</Typography>
+                                </CardContent>
+                            </Card>
+                        }
+                        </Grid>
+                    </AccordionDetails>
+                </Accordion>
             </>
-        )
+        );
     }
 
     const renderMedicineCourier = (order, index) => {
         return (
             <>
-                {renderPaymentDone(order, index)}
-                <Divider style={{ margin: '10px 0' }} />
-                <Typography variant="subtitle1">Tracking Details</Typography>
-                <Paper elevation={2} style={{ padding: '10px' }}>
-                    <Typography variant="body2"><b>Tracking Id:</b> {order.trackingId}</Typography>
-                    <Typography variant="body2"><b>Date:</b> {order.courierDate}</Typography>
-                </Paper>
+                {renderPayment(order, index, true)}
+                <Typography variant="subtitle1" sx={{marginTop:'10px'}}><b>Tracking Details</b></Typography>
+                <Card variant='outlined'>
+                    <CardContent>
+                        <Typography variant="body2"><b>Tracking Id:</b> {order.trackingId}</Typography>
+                        <Typography variant="body2"><b>Date:</b> {order.courierDate}</Typography>
+                    </CardContent>
+                </Card>
             </>
         )
     }
@@ -236,66 +280,75 @@ function Orders () {
         );
     } else {
         return (
-            <Grid container spacing={2}>
-                {orderDetails.map((order, index) => (
-                    <Grid item xs={12} md={6} key={order.orderId}>
-                        <Card variant='outlined'>
-                            <CardContent>
-                                <Typography variant="h6" gutterBottom>
-                                    {order.treatmentName}
-                                </Typography>
-                                <Typography variant="body2" color="textSecondary">
-                                    Order ID: {order.orderId}
-                                </Typography>
-                                <Typography variant="body2" color={getStatusColor(order.status)}>
-                                    Status: {order.status}
-                                </Typography>
-
-                                <Divider style={{ margin: '10px 0' }} />
-
-                                <Typography variant="body1">
-                                    For: {decryptData(order.userData).name}
-                                </Typography>
-
-                                <Typography variant="body2" gutterBottom>
-                                    Placed on: {new Date(order.createDate).toLocaleDateString()}
-                                </Typography>
-                            
-                                <Divider style={{ margin: '10px 0' }} />
-
-                                <Accordion>
-                                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                        <Typography variant="subtitle1">Questions & Answers</Typography>
-                                    </AccordionSummary>
-                                    <AccordionDetails>
-                                        <List>
-                                        {order.questions.map((qa, qaIndex) => (
-                                            <ListItem key={qaIndex}>
-                                                <Typography variant="body2">
-                                                    <strong>{qa.questionName}:</strong> {qa.optionSelected}
+            <Box>
+                <TextField label='Filter Orders'
+                            variant='outlined'
+                            fullWidth
+                            value={filterText}
+                            onChange={handleFilterChange}
+                            margin='normal' />
+                
+                <List>
+                    {filteredOrders.map((order, index) => (
+                        <Paper key={index} elevation={3} sx={{ marginBottom: '10px', padding: '15px' }}>
+                            <ListItem>
+                                <Box sx={{ width: '100%' }}>
+                                    <Accordion>
+                                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                            <Grid container direction='column'>
+                                                <Typography variant="h6" color={getStatusColor(order.status)}>
+                                                    Status: {order.status}
                                                 </Typography>
-                                            </ListItem>
-                                        ))}
-                                        </List>
-                                    </AccordionDetails>
-                                </Accordion>
+                                                <Typography variant="h6" gutterBottom>
+                                                    {order.treatmentName}
+                                                </Typography>
+                                                <Typography variant="body2" color="textSecondary">
+                                                    Order ID: {order.orderId}
+                                                </Typography>
+                                                <Typography variant="body2">
+                                                    For: {decryptData(order.userData).name}
+                                                </Typography>
+                                                <Typography variant="body2" gutterBottom>
+                                                    Placed on: {new Date(order.createDate).toLocaleDateString()}
+                                                </Typography>
+                                            </Grid>
+                                        </AccordionSummary>
+                                        <AccordionDetails>
+                                            <Grid container direction='column'>
+                                                <Accordion>
+                                                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                                        <Typography variant="subtitle1">Questions & Answers</Typography>
+                                                    </AccordionSummary>
+                                                    <AccordionDetails>
+                                                        <List>
+                                                        {order.questions.map((qa, qaIndex) => (
+                                                            <ListItem key={qaIndex}>
+                                                                <Typography variant="body2">
+                                                                    <strong>{qa.questionName}:</strong> {qa.optionSelected}
+                                                                </Typography>
+                                                            </ListItem>
+                                                        ))}
+                                                        </List>
+                                                    </AccordionDetails>
+                                                </Accordion>
 
-                                {order.additionalInfo && (
-                                <>
-                                    <Divider style={{ margin: '10px 0' }} />
-                                    <Typography variant="subtitle1">Additional Info</Typography>
-                                    <Paper elevation={2} style={{ padding: '10px' }}>
-                                        <Typography variant="body2">{order.additionalInfo}</Typography>
-                                    </Paper>
-                                </>
-                                )}
+                                                <Typography variant="subtitle1" sx={{marginTop:'10px'}}><b>Additional Info</b></Typography>
+                                                <Card variant='outlined'>
+                                                    <CardContent>
+                                                        <Typography variant="body2">{order.additionalInfo}</Typography>
+                                                    </CardContent>
+                                                </Card>
 
-                                {renderStatusSpecificUI(order.status, order, index)}
-                            </CardContent>
-                        </Card>
-                    </Grid>
-                ))}
-            </Grid>
+                                                {renderStatusSpecificUI(order.status, order, index)}
+                                            </Grid>
+                                        </AccordionDetails>
+                                    </Accordion>
+                                </Box>
+                            </ListItem>
+                        </Paper>
+                    ))}
+                </List>
+            </Box>
         );
     }
 }
