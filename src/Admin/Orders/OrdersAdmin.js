@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { decryptData } from '../../Helper/Secure';
-import { fetchUserData, storeData } from '../../Helper/ApiHelper';
+import { fetchUserData, storeData, fetchData } from '../../Helper/ApiHelper';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Card, CardContent, CircularProgress, Divider, Grid, List, ListItem, Paper, Rating, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import dayjs from 'dayjs';
@@ -8,11 +8,10 @@ import dayjs from 'dayjs';
 function OrdersAdmin () {
     const [orderDetails, setOrderDetails] = useState([]);
     const [filteredOrders, setFilteredOrders] = useState([]);
+    const [commonCharge, setCommonCharge] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [status, setStatus] = useState('');
     const [filterText, setFilterText] = useState('');
-    const consultationCharge = 100;
-    const deliveryCharge = 100;
 
     const getAge = (dob) => {
         const today = dayjs();
@@ -25,6 +24,8 @@ function OrdersAdmin () {
 
     const getOrderDetails = async (userId) => {
         try {
+            const commonCharge = await fetchData('get-commoncharge');
+            setCommonCharge(commonCharge);
             const orders = await fetchUserData('get-orders', userId);
             setOrderDetails(orders);
             setFilteredOrders(orders);
@@ -59,7 +60,6 @@ function OrdersAdmin () {
         } else if (orderToUpdate.status === 'Medicine Courier') {
             orderToUpdate.status = 'FP';
         }
-        console.log('Update', orderToUpdate);
         apiCall(orderToUpdate);
     };
 
@@ -105,7 +105,17 @@ function OrdersAdmin () {
             return sum + itemAmount;
         }, 0);
 
-        updatedOrders[orderIndex].totalAmount = totalAmount+consultationCharge+deliveryCharge;
+        var discountAmount = 0;
+        if (commonCharge.isDiscount) {
+            discountAmount = (totalAmount*commonCharge.discountPercentage)/100;
+        }
+
+        updatedOrders[orderIndex].isDiscount = commonCharge.isDiscount;
+        updatedOrders[orderIndex].discountPercentage = commonCharge.discountPercentage;
+        updatedOrders[orderIndex].consultationCharge = commonCharge.consultationCharge;
+        updatedOrders[orderIndex].deliveryCharge = commonCharge.deliveryCharge;
+
+        updatedOrders[orderIndex].totalAmount = parseFloat(totalAmount-discountAmount + commonCharge.consultationCharge + commonCharge.deliveryCharge).toFixed(2);
         setOrderDetails(updatedOrders);
     };
 
@@ -114,6 +124,12 @@ function OrdersAdmin () {
             const itemAmount = parseFloat(item.price) || 0; // Handle invalid amounts as 0
             return sum + itemAmount;
         }, 0);
+    }
+
+    const invoiceDiscount = (order) => {
+        const subTotalAmount = invoiceSubtotal(order);
+        const discountAmount = (subTotalAmount*order.discountPercentage)/100;
+        return parseFloat(subTotalAmount-discountAmount).toFixed(2);
     }
 
     const handleOrderChange = (orderIndex, field, value) => {
@@ -195,11 +211,17 @@ function OrdersAdmin () {
                             </Button>
                         </Box>
 
+                        {commonCharge.isDiscount && (
+                            <Typography variant="body2" sx={{ mt: 2 }}>
+                                Discount of {commonCharge.discountPercentage}%
+                            </Typography>
+                        )}
+
                         <Typography variant="body2" sx={{ mt: 2 }}>
-                            Consultation Charge: ₹{consultationCharge}
+                            Consultation Charge: ₹{commonCharge.consultationCharge}
                         </Typography>
                         <Typography variant="body2" sx={{ mt: 2 }}>
-                            Delivery Charge: ₹{deliveryCharge}
+                            Delivery Charge: ₹{commonCharge.deliveryCharge}
                         </Typography>
                         <Typography variant="subtitle1" sx={{ mt: 2 }}>
                             Total Amount: ₹{order.totalAmount}
@@ -322,17 +344,23 @@ function OrdersAdmin () {
                                         </TableRow>
                                     ))}
                                     <TableRow>
-                                        <TableCell rowSpan={4} />
+                                        <TableCell rowSpan={order.isDiscount?5:4} />
                                         <TableCell colSpan={2}>Subtotal</TableCell>
                                         <TableCell align='right'>{invoiceSubtotal(order)}</TableCell>
                                     </TableRow>
+                                    {order.isDiscount && (
+                                        <TableRow>
+                                            <TableCell colSpan={2}>Discount of {order.discountPercentage}%</TableCell>
+                                            <TableCell align='right'>{invoiceDiscount(order)}</TableCell>
+                                        </TableRow>
+                                    )}
                                     <TableRow>
                                         <TableCell colSpan={2}>Consultation Charges</TableCell>
-                                        <TableCell align='right'>{consultationCharge}</TableCell>
+                                        <TableCell align='right'>{order.consultationCharge}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell colSpan={2}>Delivery Charges</TableCell>
-                                        <TableCell align='right'>{deliveryCharge}</TableCell>
+                                        <TableCell align='right'>{order.deliveryCharge}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell colSpan={2}>Total</TableCell>

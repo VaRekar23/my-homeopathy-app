@@ -13,8 +13,6 @@ function Orders () {
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
     const [filterText, setFilterText] = useState('');
-    const consultationCharge = 100;
-    const deliveryCharge = 100;
 
     useEffect(() => {
         const getOrderDetails = async (userId) => {
@@ -64,6 +62,12 @@ function Orders () {
             const itemAmount = parseFloat(item.price) || 0; // Handle invalid amounts as 0
             return sum + itemAmount;
         }, 0);
+    }
+
+    const invoiceDiscount = (order) => {
+        const subTotalAmount = invoiceSubtotal(order);
+        const discountAmount = (subTotalAmount*order.discountPercentage)/100;
+        return parseFloat(subTotalAmount-discountAmount).toFixed(2);
     }
 
     const getStatusColor = (status) => {
@@ -203,17 +207,23 @@ function Orders () {
                                         </TableRow>
                                     ))}
                                     <TableRow>
-                                        <TableCell rowSpan={4} />
+                                        <TableCell rowSpan={order.isDiscount?5:4} />
                                         <TableCell colSpan={2}>Subtotal</TableCell>
                                         <TableCell align='right'>{invoiceSubtotal(order)}</TableCell>
                                     </TableRow>
+                                    {order.isDiscount && (
+                                        <TableRow>
+                                            <TableCell colSpan={2}>Discount of {order.discountPercentage}%</TableCell>
+                                            <TableCell align='right'>{invoiceDiscount(order)}</TableCell>
+                                        </TableRow>
+                                    )}
                                     <TableRow>
                                         <TableCell colSpan={2}>Consultation Charges</TableCell>
-                                        <TableCell align='right'>{consultationCharge}</TableCell>
+                                        <TableCell align='right'>{order.consultationCharge}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell colSpan={2}>Delivery Charges</TableCell>
-                                        <TableCell align='right'>{deliveryCharge}</TableCell>
+                                        <TableCell align='right'>{order.deliveryCharge}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell colSpan={2}>Total</TableCell>
