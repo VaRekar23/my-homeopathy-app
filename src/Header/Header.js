@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { AppBar, Toolbar, IconButton, Menu, MenuItem, useMediaQuery, Box, Modal } from '@mui/material';
+import { AppBar, Toolbar, IconButton, Menu, MenuItem, useMediaQuery, Box } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useTheme } from '@mui/material/styles';
 import './Header.css';
-import Login from '../Login/Login';
 import { fetchMenuItem } from '../Helper/ApiHelper';
 import { AccountCircle } from '@mui/icons-material';
 import { signOut } from 'firebase/auth';
@@ -18,18 +17,16 @@ function Header({userDetails, menuDetails, setActiveComponent, setIsAdmin}) {
     const openUserMenu = Boolean(anchorElUser);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-    const [open, setOpen] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (userDetails!==null) {
-            const user = decryptData(userDetails);
+        if (sessionStorage.getItem('user')!==null) {
+            const user = decryptData(sessionStorage.getItem('user'));
             updateMenuForUsers(user.isAdmin);
         }
     }, []);
 
-    const handleLoginOpen = () => setOpen(true);
-    const handleLoginClose = () => setOpen(false);
+    const handleLoginOpen = () => navigate('/login');
 
     const handleMenu = (event) => {
         setAnchorEl(event.currentTarget);
@@ -60,10 +57,6 @@ function Header({userDetails, menuDetails, setActiveComponent, setIsAdmin}) {
         } else {
             setActiveComponent(component);
         }
-    }
-
-    const handleLoginSuccess = (isAdmin) => {
-        updateMenuForUsers(isAdmin);
     }
 
     const handleMenuClick = (item) => {
@@ -144,13 +137,6 @@ function Header({userDetails, menuDetails, setActiveComponent, setIsAdmin}) {
                 )}
             </Toolbar>
         </AppBar>
-
-        <Modal open={open} onClose={handleLoginClose} >
-            {isMobile ? 
-                (<Login setIsAdmin={handleLoginSuccess} handleClose={handleLoginClose} width={'90%'}/>) : 
-                (<Login setIsAdmin={handleLoginSuccess} handleClose={handleLoginClose} width={'600px'} />)}
-            
-        </Modal>
         </>
     )
 }

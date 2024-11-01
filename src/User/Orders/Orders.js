@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { decryptData } from '../../Helper/Secure';
-import { fetchData, fetchUserData, storeData } from '../../Helper/ApiHelper';
-import { Accordion, AccordionDetails, AccordionSummary, Alert, Box, Button, Card, CardContent, CircularProgress, Container, Divider, Grid, List, ListItem, Paper, Rating, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material';
+import { fetchUserData, storeData } from '../../Helper/ApiHelper';
+import { Accordion, AccordionDetails, AccordionSummary, Alert, Box, Button, Card, CardContent, CircularProgress, Grid, List, ListItem, Paper, Rating, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom'
 
 function Orders () {
-    const [userData, setUserData] = useState(null);
     const [orderDetails, setOrderDetails] = useState([]);
     const [filteredOrders, setFilteredOrders] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -29,8 +28,6 @@ function Orders () {
         
         const user = decryptData(sessionStorage.getItem('user'));
         getOrderDetails(user.userId);
-
-        setUserData(user);
     }, []);
 
     const handleFilterChange = (event) => {
@@ -53,7 +50,6 @@ function Orders () {
     };
 
     const handleFeedback = (orderId) => {
-        const orderToUpdate = orderDetails[orderId];
         navigate('/feedback', { state: {orderId}});
     };
 
@@ -67,7 +63,7 @@ function Orders () {
     const invoiceDiscount = (order) => {
         const subTotalAmount = invoiceSubtotal(order);
         const discountAmount = (subTotalAmount*order.discountPercentage)/100;
-        return parseFloat(subTotalAmount-discountAmount).toFixed(2);
+        return '-' + parseFloat(discountAmount).toFixed(2);
     }
 
     const getStatusColor = (status) => {
@@ -203,13 +199,13 @@ function Orders () {
                                             <TableCell>{item.item}</TableCell>
                                             <TableCell align='right'>{item.amount}</TableCell>
                                             <TableCell align='right'>{item.qty}</TableCell>
-                                            <TableCell align='right'>{item.price}</TableCell>
+                                            <TableCell align='right'>{parseFloat(item.price).toFixed(2)}</TableCell>
                                         </TableRow>
                                     ))}
                                     <TableRow>
                                         <TableCell rowSpan={order.isDiscount?5:4} />
                                         <TableCell colSpan={2}>Subtotal</TableCell>
-                                        <TableCell align='right'>{invoiceSubtotal(order)}</TableCell>
+                                        <TableCell align='right'>{parseFloat(invoiceSubtotal(order)).toFixed(2)}</TableCell>
                                     </TableRow>
                                     {order.isDiscount && (
                                         <TableRow>
@@ -219,11 +215,11 @@ function Orders () {
                                     )}
                                     <TableRow>
                                         <TableCell colSpan={2}>Consultation Charges</TableCell>
-                                        <TableCell align='right'>{order.consultationCharge}</TableCell>
+                                        <TableCell align='right'>{parseFloat(order.consultationCharge).toFixed(2)}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell colSpan={2}>Delivery Charges</TableCell>
-                                        <TableCell align='right'>{order.deliveryCharge}</TableCell>
+                                        <TableCell align='right'>{parseFloat(order.deliveryCharge).toFixed(2)}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell colSpan={2}>Total</TableCell>

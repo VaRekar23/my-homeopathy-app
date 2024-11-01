@@ -1,29 +1,18 @@
 import { useEffect, useState } from 'react';
-import { Box, Toolbar, Container } from '@mui/material';
-import Header from './Header/Header';
-import Home from './User/Home/Home';
+import { Box } from '@mui/material';
 import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
-import Consultation from './User/Consultation/Consultation';
-import About from './User/About/About';
 import { fetchDataWithParam } from './Helper/ApiHelper';
 import CircularProgress from '@mui/material/CircularProgress';
-import Footer from './Header/Footer';
-import HomeAdmin from './Admin/Home/HomeAdmin';
-import AboutAdmin from './Admin/About/AboutAdmin';
-import ConsultationAdmin from './Admin/Consultation/ConsultationAdmin';
 import ErrorPage from './ErrorPage';
-import Dashboard from './Admin/Dashboard/Dashboard';
-import Orders from './User/Orders/Orders';
-import OrdersAdmin from './Admin/Orders/OrdersAdmin';
 import Feedback from './User/Orders/Feedback';
+import Login from './Login/Login';
+import Main from './Main';
+import AddNewUser from './Login/AddNewUser';
 
 function App() {
   const [uiDetails, setUiDetails] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeComponent, setActiveComponent] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
-  const [user, setUser] = useState(null);
-  const [consultationData, setConsultationData] = useState({ treatmentId: '', subTreatmentId: '' });
 
   useEffect(() => {
     const getUIDetails = async () => {
@@ -31,62 +20,14 @@ function App() {
         const uiData = await fetchDataWithParam('ui-details', 'english');
         setUiDetails(uiData);
       } catch(error) {
-        console.log('Error fetching documents', error);
-        return (<ErrorPage />);
+        console.log('Error App', error);
       } finally {
         setIsLoading(false);
       }
     };
 
     getUIDetails();
-    if (sessionStorage.getItem('user')!==null) {
-      setUser(sessionStorage.getItem('user'));
-    } else {
-      
-    }
   }, []);
-
-  useEffect(() => {
-    if (isAdmin) {
-      renderAdminComponent();
-    } else {
-      renderComponent();
-    }
-    
-  }, [activeComponent, isAdmin]);
-
-  const renderComponent = () => {
-    switch (activeComponent) {
-      case 'Home':
-        return <Home uiDetails={uiDetails.home} setActiveComponent={setActiveComponent} setConsultationData={setConsultationData} />;
-      case 'Consultation':
-        return <Consultation consultationData={consultationData}/>;
-      case 'About':
-        return <About uiDetails={uiDetails.about} />;
-      case 'My Orders':
-        return <Orders />;
-      default:
-        console.log('ActiveComponent', activeComponent);
-        return <Home uiDetails={uiDetails.home} setActiveComponent={setActiveComponent} setConsultationData={setConsultationData} />;
-    }
-  }
-
-  const renderAdminComponent = () => {
-    switch (activeComponent) {
-      case 'Dashboard':
-        return <Dashboard userDetails={user} />;
-      case 'Home':
-        return <HomeAdmin uiDetails={uiDetails.home} />;
-      case 'Consultation':
-        return <ConsultationAdmin />;
-      case 'About':
-        return <AboutAdmin uiDetails={uiDetails.about} />;
-      case 'Orders':
-        return <OrdersAdmin />;
-      default:
-        return <Dashboard userDetails={user} />;
-    }
-  }
   
   if (isLoading) {
     return (
@@ -104,31 +45,17 @@ function App() {
   } else {
     return (
       <>
-        {uiDetails ? (
-          <Router>
-          <Header userDetails={user} menuDetails={uiDetails.menu} setActiveComponent={setActiveComponent} setIsAdmin={setIsAdmin} />
-          <Toolbar />
-    
-          <Container>
-            <Box sx={{ my: 2 }}>
-              <Routes>
-                <Route path='/feedback' element={<Feedback />} />
-                <Route path='/error' element={<ErrorPage />} />
-                <Route path='/' element={isAdmin ? renderAdminComponent() : renderComponent()} />
-              </Routes>
-              
-            </Box>
-          </Container>
-
-          <Footer footerDetails={uiDetails.footer}/>
+        <Router>
+          <Routes>
+            <Route path='/feedback' element={<Feedback />} />
+            <Route path='/login' element={<Login setIsAdmin={setIsAdmin} />} />
+            <Route path='/adduser' element={<AddNewUser isParent={true} />} />
+            <Route path='/error' element={<ErrorPage />} />
+            <Route path='/' element={<Main uiDetails={uiDetails} isAdmin={isAdmin} setIsAdmin={setIsAdmin} />} />
+          </Routes>
         </Router>
-        ):(
-          <>
-          <p>We are working on to fix the issue...</p>
-          </>
-        )}
       </>
-    );
+    )
   }
 }
 

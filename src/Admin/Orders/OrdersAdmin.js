@@ -129,7 +129,7 @@ function OrdersAdmin () {
     const invoiceDiscount = (order) => {
         const subTotalAmount = invoiceSubtotal(order);
         const discountAmount = (subTotalAmount*order.discountPercentage)/100;
-        return parseFloat(subTotalAmount-discountAmount).toFixed(2);
+        return '-' + parseFloat(discountAmount).toFixed(2);
     }
 
     const handleOrderChange = (orderIndex, field, value) => {
@@ -340,13 +340,13 @@ function OrdersAdmin () {
                                             <TableCell>{item.item}</TableCell>
                                             <TableCell align='right'>{item.amount}</TableCell>
                                             <TableCell align='right'>{item.qty}</TableCell>
-                                            <TableCell align='right'>{item.price}</TableCell>
+                                            <TableCell align='right'>{parseFloat(item.price).toFixed(2)}</TableCell>
                                         </TableRow>
                                     ))}
                                     <TableRow>
                                         <TableCell rowSpan={order.isDiscount?5:4} />
                                         <TableCell colSpan={2}>Subtotal</TableCell>
-                                        <TableCell align='right'>{invoiceSubtotal(order)}</TableCell>
+                                        <TableCell align='right'>{parseFloat(invoiceSubtotal(order)).toFixed(2)}</TableCell>
                                     </TableRow>
                                     {order.isDiscount && (
                                         <TableRow>
@@ -356,11 +356,11 @@ function OrdersAdmin () {
                                     )}
                                     <TableRow>
                                         <TableCell colSpan={2}>Consultation Charges</TableCell>
-                                        <TableCell align='right'>{order.consultationCharge}</TableCell>
+                                        <TableCell align='right'>{parseFloat(order.consultationCharge).toFixed(2)}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell colSpan={2}>Delivery Charges</TableCell>
-                                        <TableCell align='right'>{order.deliveryCharge}</TableCell>
+                                        <TableCell align='right'>{parseFloat(order.deliveryCharge).toFixed(2)}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell colSpan={2}>Total</TableCell>

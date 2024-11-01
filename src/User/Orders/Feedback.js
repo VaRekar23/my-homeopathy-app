@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { decryptData } from '../../Helper/Secure';
 import { fetchUserData, storeData } from '../../Helper/ApiHelper';
 import { Alert, Box, Button, Card, CardContent, CircularProgress, Container, Grid, Rating, TextField, Typography } from '@mui/material';
 
 function Feedback () {
     const navigate = useNavigate();
-    const location = useLocation();
     const [userData, setUserData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [feedbackData, setFeedbackData] = useState({

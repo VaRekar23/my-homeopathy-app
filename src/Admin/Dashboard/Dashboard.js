@@ -8,7 +8,8 @@ import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import dayjs from 'dayjs';
 
 function Dashboard({userDetails}) {
-    const [userData, setUserData] = useState(decryptData(userDetails));
+    //const [userData, setUserData] = useState(decryptData(userDetails));
+    const [userData, setUserData] = useState(null);
     const [dashboardData, setDashboardDate] = useState(null);
     const [commonCharge, setCommonCharge] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -35,6 +36,10 @@ function Dashboard({userDetails}) {
         };
 
         getDashboardDetails();
+        if (sessionStorage.getItem('user')!==null) {
+            setUserData(decryptData(sessionStorage.getItem('user')));
+            console.log('Dashboard User in Session');
+        }
     }, []);
 
     useEffect(() => {
@@ -217,6 +222,7 @@ function Dashboard({userDetails}) {
                 </Grid>
             </Box>
 
+            {userData && (
             <Box sx={{display:'flex', flexDirection: 'row', alignItems:'left', padding:2, border: '1px solid #ccc', borderRadius: '8px', gap:2, marginTop: '10px'}}>
                 <FormControl variant='standard' sx={{ minWidth: 200 }}>
                             <InputLabel>Are you Admin?</InputLabel>
@@ -232,6 +238,7 @@ function Dashboard({userDetails}) {
                     {loading ? <CircularProgress size={24} /> : 'Save'}
                 </Button>
             </Box>
+            )}
             </>
         );
     }

@@ -6,12 +6,16 @@ import React, {useCallback, useEffect, useState} from 'react';
 import dayjs from 'dayjs';
 import { encryptData } from '../Helper/Secure'
 import { storeData } from '../Helper/ApiHelper';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-function AddNewUser({phoneNumber, user, handleClose, setIsAdmin}) {
-    const [userData, setUserData] = useState({
-        userId: user,
+function AddNewUser({ userId, phoneNumber, isParent, parentId, editData, setContentVisible}) {
+    const location = useLocation();
+    const { user, phone } = location.state || {};
+
+    const [userData, setUserData] = useState(editData ? editData : {
+        userId: isParent?user:userId,
         isAdmin: false,
-        phone: phoneNumber,
+        phone: isParent?phone:phoneNumber,
         name: '',
         occupation: '',
         dob: null,
@@ -23,12 +27,17 @@ function AddNewUser({phoneNumber, user, handleClose, setIsAdmin}) {
         pinCode: ''
     });
     const [status, setStatus] = useState('');
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (status!=='') {
             console.log('Status', status);
-            setIsAdmin(false);
-            handleClose();
+            if (isParent) {
+                navigate('/');
+            } else {
+                setContentVisible(false);
+            }
+
         }
     }, [status]);
 
@@ -55,13 +64,14 @@ function AddNewUser({phoneNumber, user, handleClose, setIsAdmin}) {
         const cipherData = encryptData(userData);
 
         const request = {
-            userId: user,
+            userId: isParent ? (user ? user : userId) : userId,
             isAdmin: false,
-            isParent: true,
+            isParent: isParent,
             encryptedData: cipherData,
-            parentId: ''
+            parentId: isParent ? '' : parentId
         }
 
+        console.log('Store User', request);
         const response = storeData('store-user', request);
         sessionStorage.setItem('user', cipherData);
         setStatus(response);
@@ -70,7 +80,7 @@ function AddNewUser({phoneNumber, user, handleClose, setIsAdmin}) {
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%', margin: '0 auto', maxHeight: '90vh', overflowY: 'auto', padding: 3, borderRadius: '8px' }}>
             <Typography variant='h6' gutterBottom align='center'>
-                User Information
+                {isParent ? 'Add your details' : 'Add family member'}
             </Typography>
             <TextField label='Phone Number' value={userData.phone} fullWidth margin='normal' disabled variant="outlined" />
             <TextField label='Full Name' name='name' value={userData.name} 
@@ -79,7 +89,7 @@ function AddNewUser({phoneNumber, user, handleClose, setIsAdmin}) {
                 <Grid item xs={6}>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DemoContainer components={['DatePicker']}>
-                            <DatePicker label='Date of Birth' value={userData.dob} onChange={handleDOBChange} />
+                            <DatePicker label='Date of Birth' value={dayjs(userData.dob)} onChange={handleDOBChange} />
                         </DemoContainer>
                     </LocalizationProvider>
                 </Grid>

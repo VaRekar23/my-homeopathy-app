@@ -1,19 +1,32 @@
-import { Box, Button, TextField, Typography, CircularProgress } from '@mui/material';
+import { Box, Button, TextField, Typography, CircularProgress, Alert } from '@mui/material';
 import React, {useEffect, useState} from 'react';
 import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 import { auth } from '../Helper/FirebaseConfig';
 import { fetchUserData } from '../Helper/ApiHelper';
 import AddNewUser from './AddNewUser';
-import { decryptData } from '../Helper/Secure'
+import { useNavigate } from 'react-router-dom';
 
-function Login({setIsAdmin, handleClose, width}) {
+function Login({setIsAdmin}) {
     const [phone, setPhone] = useState('');
     const [otp, setOTP] = useState('');
-    const [isOtpSent, setIsOtpSent] = useState(false);
     const [user, setUser] = useState(null);
     const [verificationId, setVerificationId] = useState(null);
     const [loading, setLoading] = useState(false);
     const [showAddNewUser, setShowAddNewUser] = useState(false);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (sessionStorage.getItem('user')!==null)
+            navigate('/');
+
+        return () => {
+            if (window.recaptchaVerifier) {
+                window.recaptchaVerifier.clear();
+                window.recaptchaVerifier = null;
+            }
+        };
+
+    }, [navigate]);
 
     const setupRecaptcha = () => {
         window.recaptchaVerifier = new RecaptchaVerifier(
@@ -22,13 +35,14 @@ function Login({setIsAdmin, handleClose, width}) {
             {
                 size: 'invisible',
                 callback: (response) => {
-                    setIsOtpSent(true);
+                    //setIsOtpSent(true);
+                    console.log('Recaptcha verification done')
                 },
             }
         );
     };
 
-    const requestOtp = (e) => {
+    const requestOtp = async (e) => {
         e.preventDefault();
         setLoading(true);
         setupRecaptcha();
@@ -41,8 +55,12 @@ function Login({setIsAdmin, handleClose, width}) {
                 window.confirmationResult = confirmationResult;
                 setVerificationId(confirmationResult.verificationId);
                 setLoading(false);
+                console.log('OTP has been send');
             }).catch((error) => {
                 setLoading(false);
+                if (window.recaptchaVerifier) {
+                    window.recaptchaVerifier.clear();
+                }
                 console.log('Error sending OTP:', error);
             });
     };
@@ -66,11 +84,17 @@ function Login({setIsAdmin, handleClose, width}) {
     const verifyUser = async (userId) => {
         try {
             const users = await fetchUserData('get-users', userId);
+            if (window.recaptchaVerifier) {
+                window.recaptchaVerifier.clear();
+                window.recaptchaVerifier = null;
+            }
             if (users.length!==0) {
                 sessionStorage.setItem('user', users.encryptedData);
                 setIsAdmin(users.isAdmin);
-                handleClose();
+                navigate('/', {state: {users}});
             } else {
+                setIsAdmin(false);
+                navigate('/adduser', {state: {user, phone}})
                 setShowAddNewUser(true);
             }
         } catch(error) {
@@ -79,24 +103,20 @@ function Login({setIsAdmin, handleClose, width}) {
     };
 
     return (
-        <Box display="flex" flexDirection="column" alignItems="center" mt={4}
-            sx={{position: 'absolute', 
-                top: '50%', 
-                left: '50%', 
-                transform: 'translate(-50%, -50%)', 
-                width: {width},
-                bgcolor: 'background.paper', 
-                borderRadius: 2,
-                border: '2px solid #000', 
-                boxShadow: 24,
-                p: 4}} >
-            {!showAddNewUser ? (
+        <Box flexDirection="column" 
+            sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100vh'  // Makes the Box take up the full viewport height
+            }}
+        >
+            <Typography variant='h6' gutterBottom>Login</Typography>
+            {!verificationId ? (
                 <>
-                    <Typography variant='h6' gutterBottom>
-                        Authentication
-                    </Typography>
-
-                    <form onSubmit={requestOtp} style={{ width: '100%', maxWidth: '400px' }}>
+                    <Typography variant='subtitle1'>Enter Mobile Number</Typography>
+                    <Alert severity='info'>This number will be used to contact you!!</Alert>
+                    <form onSubmit={requestOtp} >
                         <TextField label='Phone Number' variant='outlined' fullWidth margin='normal' value={phone} type='number' onChange={(e) => setPhone(e.target.value)} />
                         <Button type='submit' variant='contained' color='primary' fullWidth disabled={loading || phone.length!==10}>
                             {loading ? <CircularProgress size={24} /> : 'Send OTP'}
@@ -104,21 +124,23 @@ function Login({setIsAdmin, handleClose, width}) {
                     </form>
 
                     <div style={{alignContent:'center'}} id='recaptcha-container'></div>
-            
-                    {verificationId && (
-                        <form onSubmit={verifyOtp} style={{ width: '100%', maxWidth: '400px', marginTop: '16px' }} >
-                            <TextField label='OTP' variant='outlined' fullWidth margin='normal' value={otp} type='number' onChange={(e) => setOTP(e.target.value)} />
-                            <Button type='submit' variant='contained' color='primary' fullWidth disabled={loading || otp.length!==6}>
-                                {loading ? <CircularProgress size={24} /> : 'Verify OTP'}
-                            </Button>
-                        </form>
-                    )}
                 </>
-            ):(
-                <AddNewUser phoneNumber={phone} user={user} setIsAdmin={setIsAdmin} handleClose={handleClose} />
+            ) : (
+                <>
+                    <Typography variant='subtitle1'>Enter Confirmation Code</Typography>
+                    <Typography variant='body1'>Enter the code received on {phone}</Typography>
+
+                    <form onSubmit={verifyOtp} >
+                        <TextField label='OTP' variant='outlined' fullWidth margin='normal' value={otp} type='number' onChange={(e) => setOTP(e.target.value)} />
+                        <Button type='submit' variant='contained' color='primary' fullWidth disabled={loading || otp.length!==6}>
+                            {loading ? <CircularProgress size={24} /> : 'Verify OTP'}
+                        </Button>
+                    </form>
+                </>
             )}
         </Box>
     );
+    
 }
 
 export default Login;
