@@ -175,44 +175,44 @@ function Dashboard({userDetails}) {
                             </Paper>
                         </Grid>
                     </Grid>
-                    <Grid container spacing={7} sx={{marginTop:'2px'}}>
-                        <Grid item xs={3}>
+                    <Grid container spacing={2} sx={{marginTop:'2px'}}>
+                        <Grid item xs={12} sm={6} md={3}>
                             <Paper elevation={2} sx={{textAlign: 'center', padding:2}}>
                                 <Typography variant='body2' color={'orange'}>Pending Doctor Review</Typography>
                                 <Typography variant='subtitle1'>{dashboardData.countOrderPRD}</Typography>
                             </Paper>
                         </Grid>
-                        <Grid item xs={3}>
+                        <Grid item xs={12} sm={6} md={3}>
                             <Paper elevation={2} sx={{textAlign: 'center', padding:2}}>
                                 <Typography variant='body2' color={'red'}>Payment Pending</Typography>
                                 <Typography variant='subtitle1'>{dashboardData.countOrderPP}</Typography>
                             </Paper>
                         </Grid>
-                        <Grid item xs={3}>
+                        <Grid item xs={12} sm={6} md={3}>
                             <Paper elevation={2} sx={{textAlign: 'center', padding:2}}>
                                 <Typography variant='body2' color={'green'}>Payment Done</Typography>
                                 <Typography variant='subtitle1'>{dashboardData.countOrderPD}</Typography>
                             </Paper>
                         </Grid>
-                        <Grid item xs={3}>
+                        <Grid item xs={12} sm={6} md={3}>
                             <Paper elevation={2} sx={{textAlign: 'center', padding:2}}>
                                 <Typography variant='body2' color={'blue'}>Medicine Courier</Typography>
                                 <Typography variant='subtitle1'>{dashboardData.countOrderMC}</Typography>
                             </Paper>
                         </Grid>
-                        <Grid item xs={3}>
+                        <Grid item xs={12} sm={6} md={3}>
                             <Paper elevation={2} sx={{textAlign: 'center', padding:2}}>
                                 <Typography variant='body2' color={'orange'}>Feedback Pending</Typography>
                                 <Typography variant='subtitle1'>{dashboardData.countOrderFP}</Typography>
                             </Paper>
                         </Grid>
-                        <Grid item xs={3}>
+                        <Grid item xs={12} sm={6} md={3}>
                             <Paper elevation={2} sx={{textAlign: 'center', padding:2}}>
                                 <Typography variant='body2' color={'green'}>Complete</Typography>
                                 <Typography variant='subtitle1'>{dashboardData.countOrderC}</Typography>
                             </Paper>
                         </Grid>
-                        <Grid item xs={3}>
+                        <Grid item xs={12} sm={6} md={3}>
                             <Paper elevation={2} sx={{textAlign: 'center', padding:2}}>
                                 <Typography variant='body2' color={'red'}>Delete</Typography>
                                 <Typography variant='subtitle1'>{dashboardData.countOrderD}</Typography>
