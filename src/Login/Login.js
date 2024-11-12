@@ -94,7 +94,7 @@ function Login({setIsAdmin}) {
                 navigate('/', {state: {users}});
             } else {
                 setIsAdmin(false);
-                navigate('/adduser', {state: {user, phone}})
+                navigate('/adduser', {state: {userId, phone}})
                 setShowAddNewUser(true);
             }
         } catch(error) {

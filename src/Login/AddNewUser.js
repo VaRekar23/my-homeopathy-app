@@ -8,14 +8,14 @@ import { encryptData } from '../Helper/Secure'
 import { storeData } from '../Helper/ApiHelper';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-function AddNewUser({ userId, phoneNumber, isParent, parentId, editData, setContentVisible}) {
+function AddNewUser({ user_Id, phoneNumber, isParent, parentId, editData, setContentVisible}) {
     const location = useLocation();
-    const { user, phone } = location.state || {};
+    const { userId, phone } = location.state || {};
 
     const [userData, setUserData] = useState(editData ? editData : {
-        userId: isParent?user:userId,
+        userId: userId?userId:user_Id,
         isAdmin: false,
-        phone: isParent?phone:phoneNumber,
+        phone: phone?phone:phoneNumber,
         name: '',
         occupation: '',
         dob: null,
@@ -31,8 +31,7 @@ function AddNewUser({ userId, phoneNumber, isParent, parentId, editData, setCont
 
     useEffect(() => {
         if (status!=='') {
-            console.log('Status', status);
-            if (isParent) {
+            if (location.state !== null) {
                 navigate('/');
             } else {
                 setContentVisible(false);
@@ -64,23 +63,24 @@ function AddNewUser({ userId, phoneNumber, isParent, parentId, editData, setCont
         const cipherData = encryptData(userData);
 
         const request = {
-            userId: isParent ? (user ? user : userId) : userId,
+            userId: userId ? userId : user_Id,
             isAdmin: false,
             isParent: isParent,
             encryptedData: cipherData,
             parentId: isParent ? '' : parentId
         }
 
-        console.log('Store User', request);
         const response = storeData('store-user', request);
-        sessionStorage.setItem('user', cipherData);
+        if (isParent) {
+            sessionStorage.setItem('user', cipherData);
+        }
         setStatus(response);
     };
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%', margin: '0 auto', maxHeight: '90vh', overflowY: 'auto', padding: 3, borderRadius: '8px' }}>
             <Typography variant='h6' gutterBottom align='center'>
-                {isParent ? 'Add your details' : 'Add family member'}
+                {isParent ? 'Your details' : 'Family member'}
             </Typography>
             <TextField label='Phone Number' value={userData.phone} fullWidth margin='normal' disabled variant="outlined" />
             <TextField label='Full Name' name='name' value={userData.name} 

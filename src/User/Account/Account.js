@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useId } from 'react';
 import { decryptData } from '../../Helper/Secure';
 import { fetchUserData } from '../../Helper/ApiHelper';
-import { Box, CircularProgress, IconButton, List, ListItem, Paper } from '@mui/material';
+import { Box, CircularProgress, IconButton, List, ListItem, Paper, Typography } from '@mui/material';
 import UserData from './UserData';
-import { Edit } from '@mui/icons-material';
+import { AddCircle, Edit } from '@mui/icons-material';
 import AddNewUser from '../../Login/AddNewUser';
 
 function Account () {
@@ -11,6 +11,7 @@ function Account () {
     const [userData, setUserData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isEdit, setIsEdit] = useState(false);
+    const [isAddNewUser, setIsAddNewUser] = useState(false);
 
     useEffect(() => {
         const getAllUserDetails = async (userId) => {
@@ -18,7 +19,13 @@ function Account () {
                 const childUsers = await fetchUserData('get-allusers', userId);
                 childUsers.forEach((user, index) => {
                     const userData = decryptData(user.encryptedData);
-                    setChildUsers((prevChildUsers) => [...prevChildUsers, {userData: userData, isEdit: false}]);
+                    setChildUsers((prevChildUsers) => {
+                        const isExisting = prevChildUsers.some((data) => data.userData.userId === userData.userId);
+                        if (!isExisting) {
+                            return [...prevChildUsers, {userData: userData, isEdit: false}];
+                        }
+                        return prevChildUsers;
+                    })  
                 });
             } catch(error) {
                 console.error('Error fetching question detials', error);
@@ -41,6 +48,18 @@ function Account () {
         setChildUsers(updateChildUsers);
     }
 
+    const handleUpdateDone = (index) => {
+        const updateChildUsers = [...childUsers];
+        updateChildUsers[index].isEdit = false;
+
+        setChildUsers(updateChildUsers);
+    }
+
+    function HandleUniqueId() {
+        const uniqueId = `id-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+        return uniqueId;
+    }
+
     if (isLoading) {
         return (
           <>
@@ -57,14 +76,14 @@ function Account () {
     } else {
         return (
             <List>
-                <Paper key={userData.userId} elevation={3} sx={{ marginBottom: '10px', padding: '15px' }}>
+                <Paper key={userData.userId} elevation={3} sx={{ marginBottom: '10px', padding: '5px' }}>
                     <ListItem>
                         {isEdit ? (
-                                <AddNewUser userId={userData.userId} phoneNumber={userData.phone} isParent={true} editData={userData} setContentVisible={setIsEdit} />
+                                <AddNewUser user_Id={userData.userId} phoneNumber={userData.phone} isParent={true} editData={userData} setContentVisible={setIsEdit} />
                             ) : (
                                 <>
                                 <UserData userData={userData} isEdit={isEdit} isParent={true} setContentVisible={setIsEdit} />
-                                <IconButton onClick={() => setIsEdit(true)}><Edit /></IconButton>
+                                <IconButton onClick={() => setIsEdit(true)} sx={{ alignContent: 'end' }}><Edit /></IconButton>
                                 </>
                             )
                         }
@@ -74,14 +93,28 @@ function Account () {
                 {childUsers.map((childUser, index) => (
                     <Paper key={index} elevation={3} sx={{ marginBottom: '10px', padding: '15px' }}>
                         <ListItem>
-                            <UserData userData={childUser.userData} isEdit={childUser.isEdit} isParent={false} setContentVisible={setIsEdit} />
+                            {!childUser.isEdit ? (
+                                <>
+                                <UserData userData={childUser.userData} isEdit={childUser.isEdit} isParent={false} setContentVisible={setIsEdit} />
+                                <IconButton onClick={() => handleEdit(index)}><Edit /></IconButton>
+                                </>
+                            ) : (
+                                <AddNewUser user_Id={childUser.userData.userId} phoneNumber={userData.phone} isParent={false} editData={childUser.userData} parentId={userData.userId} setContentVisible={() => handleUpdateDone(index)} />
+                            )
+                            }
                         </ListItem>
-                        {!childUser.isEdit &&
-                            <IconButton onClick={() => handleEdit(index)}><Edit /></IconButton>
-                        }
                     </Paper>
                 ))}
+
+                {isAddNewUser ? (
+                    <AddNewUser user_Id={HandleUniqueId()} phoneNumber={userData.phone} isParent={false} parentId={userData.userId} setContentVisible={setIsAddNewUser} />
+                ) : (
+                    <IconButton color="success" onClick={() => setIsAddNewUser(true)} >
+                        <AddCircle />
+                    </IconButton>
+                )}
             </List>
+
         );
     }
 }

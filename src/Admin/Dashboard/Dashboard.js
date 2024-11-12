@@ -10,7 +10,7 @@ import dayjs from 'dayjs';
 function Dashboard({userDetails}) {
     //const [userData, setUserData] = useState(decryptData(userDetails));
     const [userData, setUserData] = useState(null);
-    const [dashboardData, setDashboardDate] = useState(null);
+    const [dashboardData, setDashboardData] = useState(null);
     const [commonCharge, setCommonCharge] = useState(null);
     const [loading, setLoading] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -20,7 +20,7 @@ function Dashboard({userDetails}) {
         const getDashboardDetails = async () => {
             try {
                 const dashboardDetails = await fetchData('get-admindashboard');
-                setDashboardDate(dashboardDetails);
+                setDashboardData(dashboardDetails);
                 setCommonCharge({
                     consultationCharge: dashboardDetails.consultationCharge,
                     isDiscount: dashboardDetails.isDiscount,

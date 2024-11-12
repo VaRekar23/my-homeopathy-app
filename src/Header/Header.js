@@ -51,6 +51,7 @@ function Header({userDetails, menuDetails, setActiveComponent, setIsAdmin}) {
                 setUserMenuMobile(<MenuItem onClick={handleLoginOpen}>Sign In</MenuItem>);
                 setIsAdmin(false);
                 sessionStorage.removeItem('user');
+                setActiveComponent('Home');
             }).catch((error) => {
                 console.log('Signout error', error);
             });
