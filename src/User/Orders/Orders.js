@@ -312,7 +312,7 @@ function Orders () {
                                                     Order ID: {order.orderId}
                                                 </Typography>
                                                 <Typography variant="body2">
-                                                    For: {decryptData(order.userData).name}
+                                                    For: {decryptData(order.userData).isDeleted ? decryptData(order.userData).name+' (User is Deleted)' : decryptData(order.userData).name}
                                                 </Typography>
                                                 <Typography variant="body2" gutterBottom>
                                                     Placed on: {new Date(order.createDate).toLocaleDateString()}

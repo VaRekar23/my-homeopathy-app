@@ -36,7 +36,6 @@ function Login({setIsAdmin}) {
                 size: 'invisible',
                 callback: (response) => {
                     //setIsOtpSent(true);
-                    console.log('Recaptcha verification done')
                 },
             }
         );
@@ -55,7 +54,6 @@ function Login({setIsAdmin}) {
                 window.confirmationResult = confirmationResult;
                 setVerificationId(confirmationResult.verificationId);
                 setLoading(false);
-                console.log('OTP has been send');
             }).catch((error) => {
                 setLoading(false);
                 if (window.recaptchaVerifier) {

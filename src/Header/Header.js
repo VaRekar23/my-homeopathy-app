@@ -43,6 +43,7 @@ function Header({userDetails, menuDetails, setActiveComponent, setIsAdmin}) {
     }
 
     const handleUserMenuClose = (component) => {
+        setAnchorEl(null);
         setAnchorElUser(null);
         if (component==='Logout') {
             signOut(auth).then(() => {

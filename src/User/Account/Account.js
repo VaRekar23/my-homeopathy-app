@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useId } from 'react';
-import { decryptData } from '../../Helper/Secure';
-import { fetchUserData } from '../../Helper/ApiHelper';
+import { decryptData, encryptData } from '../../Helper/Secure';
+import { fetchUserData, storeData } from '../../Helper/ApiHelper';
 import { Box, CircularProgress, IconButton, List, ListItem, Paper, Typography } from '@mui/material';
 import UserData from './UserData';
-import { AddCircle, Edit } from '@mui/icons-material';
+import { AddCircle, Delete, Edit } from '@mui/icons-material';
 import AddNewUser from '../../Login/AddNewUser';
+import dayjs from 'dayjs';
 
 function Account () {
     const [childUsers, setChildUsers] = useState([]);
@@ -16,8 +17,9 @@ function Account () {
     useEffect(() => {
         const getAllUserDetails = async (userId) => {
             try {
-                const childUsers = await fetchUserData('get-allusers', userId);
-                childUsers.forEach((user, index) => {
+                setChildUsers([]);
+                const childUsersData = await fetchUserData('get-allusers', userId);
+                childUsersData.forEach((user, index) => {
                     const userData = decryptData(user.encryptedData);
                     setChildUsers((prevChildUsers) => {
                         const isExisting = prevChildUsers.some((data) => data.userData.userId === userData.userId);
@@ -46,6 +48,28 @@ function Account () {
         updateChildUsers[index].isEdit = true;
 
         setChildUsers(updateChildUsers);
+    }
+
+    const handleDelete = (index) => {
+        const updateChildUsers = [...childUsers];
+        const updateUserData = updateChildUsers[index].userData;
+        const deleteUser = {
+            ...updateUserData,
+            isDeleted: true,
+            lastUpdateDate: dayjs(),
+            updatedBy: userData.name
+        };
+        const cipherData = encryptData(deleteUser);
+
+        const request = {
+            userId: updateUserData.userId,
+            isAdmin: false,
+            isParent: false,
+            encryptedData: cipherData,
+            parentId: userData.userId
+        }
+
+        const response = storeData('store-user', request);
     }
 
     const handleUpdateDone = (index) => {
@@ -79,7 +103,7 @@ function Account () {
                 <Paper key={userData.userId} elevation={3} sx={{ marginBottom: '10px', padding: '5px' }}>
                     <ListItem>
                         {isEdit ? (
-                                <AddNewUser user_Id={userData.userId} phoneNumber={userData.phone} isParent={true} editData={userData} setContentVisible={setIsEdit} />
+                                <AddNewUser user_Id={userData.userId} phoneNumber={userData.phone} isParent={true} editData={userData} setContentVisible={setIsEdit} isEdit={true} />
                             ) : (
                                 <>
                                 <UserData userData={userData} isEdit={isEdit} isParent={true} setContentVisible={setIsEdit} />
@@ -91,15 +115,21 @@ function Account () {
                     </ListItem>
                 </Paper>
                 {childUsers.map((childUser, index) => (
-                    <Paper key={index} elevation={3} sx={{ marginBottom: '10px', padding: '15px' }}>
+                    <Paper key={index} elevation={3} 
+                        sx={{ marginBottom: '10px', padding: '5px', opacity: childUser.userData.isDeleted ? 0.5 : 1, backgroundColor: childUser.userData.isDeleted ? 'lightgrey' : 'white' }}>
                         <ListItem>
                             {!childUser.isEdit ? (
                                 <>
                                 <UserData userData={childUser.userData} isEdit={childUser.isEdit} isParent={false} setContentVisible={setIsEdit} />
-                                <IconButton onClick={() => handleEdit(index)}><Edit /></IconButton>
+                                {!childUser.userData.isDeleted && 
+                                    <>
+                                    <IconButton onClick={() => handleEdit(index)}><Edit /></IconButton>
+                                    <IconButton onClick={() => handleDelete(index)}><Delete /></IconButton>
+                                    </>
+                                }
                                 </>
                             ) : (
-                                <AddNewUser user_Id={childUser.userData.userId} phoneNumber={userData.phone} isParent={false} editData={childUser.userData} parentId={userData.userId} setContentVisible={() => handleUpdateDone(index)} />
+                                <AddNewUser user_Id={childUser.userData.userId} phoneNumber={userData.phone} isParent={false} editData={childUser.userData} parentId={userData.userId} setContentVisible={() => handleUpdateDone(index)} isEdit={true} />
                             )
                             }
                         </ListItem>
@@ -107,7 +137,7 @@ function Account () {
                 ))}
 
                 {isAddNewUser ? (
-                    <AddNewUser user_Id={HandleUniqueId()} phoneNumber={userData.phone} isParent={false} parentId={userData.userId} setContentVisible={setIsAddNewUser} />
+                    <AddNewUser user_Id={HandleUniqueId()} phoneNumber={userData.phone} isParent={false} parentId={userData.userId} setContentVisible={setIsAddNewUser} isEdit={false} />
                 ) : (
                     <IconButton color="success" onClick={() => setIsAddNewUser(true)} >
                         <AddCircle />

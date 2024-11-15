@@ -69,7 +69,9 @@ function Consultation ({consultationData})  {
                 const childUsers = await fetchUserData('get-allusers', userData.userId);
                 childUsers.forEach((user, index) => {
                     const userData = decryptData(user.encryptedData);
-                    setChildUsers((prevChildUsers) => [...prevChildUsers, userData]);
+                    if (!userData.isDeleted) {
+                        setChildUsers((prevChildUsers) => [...prevChildUsers, userData]);
+                    }
                 });
             } catch(error) {
                 console.error('Error fetching question detials', error);

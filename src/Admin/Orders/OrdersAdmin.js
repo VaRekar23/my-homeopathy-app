@@ -451,7 +451,7 @@ function OrdersAdmin () {
                                             <Card variant='outlined'>
                                                 <CardContent>
                                                     <Typography variant="body2">
-                                                        <b>Name:</b> {decryptData(order.userData).name}
+                                                        <b>Name:</b> {decryptData(order.userData).isDeleted ? decryptData(order.userData).name+' (User is Deleted)' : decryptData(order.userData).name}
                                                     </Typography>
                                                     <Typography variant="body2">
                                                         <b>Phone Number:</b> {decryptData(order.userData).phone}

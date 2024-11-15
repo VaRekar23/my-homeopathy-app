@@ -19,7 +19,7 @@ function Feedback () {
         const checkUserLogin = async () => {
             const user = sessionStorage.getItem('user');
             if (!user) {
-                console.log('Need login');
+                navigate('/login');
             } else {
                 setUserData(decryptData(user));
                 const orders = await fetchUserData('get-orders', decryptData(user).userId);

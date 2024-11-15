@@ -65,6 +65,8 @@ function Main({uiDetails, isAdmin, setIsAdmin}) {
             return <AboutAdmin uiDetails={uiDetails.about} />;
           case 'Orders':
             return <OrdersAdmin />;
+          case 'Account':
+              return <Account />;
           default:
             return <Dashboard />;
         }

@@ -1,20 +1,24 @@
-import { Grid, TextField, Box, Typography, MenuItem, Button, FormControl, InputLabel, Select } from '@mui/material';
+import { Grid, TextField, Box, Typography, MenuItem, Button, FormControl, InputLabel, Select, FormGroup, FormControlLabel, Checkbox } from '@mui/material';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import React, {useCallback, useEffect, useState} from 'react';
 import dayjs from 'dayjs';
-import { encryptData } from '../Helper/Secure'
+import { decryptData, encryptData } from '../Helper/Secure'
 import { storeData } from '../Helper/ApiHelper';
 import { useLocation, useNavigate } from 'react-router-dom';
+import './Login.css';
 
-function AddNewUser({ user_Id, phoneNumber, isParent, parentId, editData, setContentVisible}) {
+function AddNewUser({ user_Id, phoneNumber, isParent, parentId, editData, setContentVisible, isEdit}) {
     const location = useLocation();
     const { userId, phone } = location.state || {};
 
     const [userData, setUserData] = useState(editData ? editData : {
         userId: userId?userId:user_Id,
         isAdmin: false,
+        isDeleted: false,
+        lastUpdateDate: null,
+        updatedBy: '',
         phone: phone?phone:phoneNumber,
         name: '',
         occupation: '',
@@ -27,7 +31,17 @@ function AddNewUser({ user_Id, phoneNumber, isParent, parentId, editData, setCon
         pinCode: ''
     });
     const [status, setStatus] = useState('');
+    const [checked, setChecked] = useState(false);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!location.state) {
+            if (!sessionStorage.getItem('user')) {
+                navigate('/login');
+            }
+        }
+        
+    }, [navigate]);
 
     useEffect(() => {
         if (status!=='') {
@@ -58,9 +72,45 @@ function AddNewUser({ user_Id, phoneNumber, isParent, parentId, editData, setCon
         }
     };
 
+    const handleChecked = (event) => {
+        setChecked(event.target.checked);
+        if (event.target.checked) {
+            const parentData = decryptData(sessionStorage.getItem('user'));
+            setUserData((previousState) => ({
+                ...previousState,
+                building: parentData.building,
+                street: parentData.street,
+                city: parentData.city,
+                state: parentData.state,
+                pinCode: parentData.pinCode
+            }));
+        } else {
+            setUserData((previousState) => ({
+                ...previousState,
+                building: '',
+                street: '',
+                city: '',
+                state: '',
+                pinCode: ''
+            }));
+        }
+    }
+
     const handleSubmit = (e) => {
         e.preventDefault();
-        const cipherData = encryptData(userData);
+        var cipherData = null;
+        if (isEdit) {
+            const parentUser = decryptData(sessionStorage.getItem('user'));
+            const updatedUserData = {
+                ...userData,
+                lastUpdateDate: dayjs(),
+                updatedBy: parentUser.name
+            };
+            console.log('Updated User', updatedUserData);
+            cipherData = encryptData(updatedUserData);
+        } else {
+            cipherData = encryptData(userData);
+        }
 
         const request = {
             userId: userId ? userId : user_Id,
@@ -80,7 +130,7 @@ function AddNewUser({ user_Id, phoneNumber, isParent, parentId, editData, setCon
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%', margin: '0 auto', maxHeight: '90vh', overflowY: 'auto', padding: 3, borderRadius: '8px' }}>
             <Typography variant='h6' gutterBottom align='center'>
-                {isParent ? 'Your details' : 'Family member'}
+                {(!isParent) || isEdit ? (isParent ? 'Your details' : 'Family member') : 'Add your details'}
             </Typography>
             <TextField label='Phone Number' value={userData.phone} fullWidth margin='normal' disabled variant="outlined" />
             <TextField label='Full Name' name='name' value={userData.name} 
@@ -110,6 +160,11 @@ function AddNewUser({ user_Id, phoneNumber, isParent, parentId, editData, setCon
                         onChange={handleOnChange} fullWidth margin='normal' />
 
             <Box sx={{display:'flex', flexDirection: 'column', alignItems:'left', padding:2, border: '1px solid #ccc', borderRadius: '8px', width:'full', gap:2}}>
+                {(!isParent) &&
+                    <FormGroup>
+                        <FormControlLabel control={<Checkbox checked={checked} onChange={handleChecked} inputProps={{ 'aria-label': 'controlled' }} />} label="Same as Parent" />
+                    </FormGroup>
+                }
                 <TextField label='Building' name='building' value={userData.building} 
                         onChange={handleOnChange} fullWidth margin='normal' />
                 <TextField label='Street' name='street' value={userData.street} 
@@ -122,9 +177,21 @@ function AddNewUser({ user_Id, phoneNumber, isParent, parentId, editData, setCon
                         onChange={handleOnChange} fullWidth margin='normal' />
             </Box>
 
-            <Button variant="contained" color="primary" onClick={handleSubmit} fullWidth>
-                Submit
-            </Button>
+            {(!isParent) || isEdit ? (
+                <div className='container'>
+                    <Button variant="contained" color='primary' className='custom-button' sx={{mt:2}}
+                        onClick={handleSubmit} >Update</Button>
+                    <Button variant="contained" color='inherit' className='custom-button' sx={{mt:2}}
+                        onClick={() => setContentVisible(false)} >Cancel</Button>
+                </div>
+            ) : (
+                <div className='container'>
+                    <Button variant="contained" color="primary" className='custom-button' onClick={handleSubmit} fullWidth>
+                        Submit
+                    </Button>
+                </div>
+            )}
+            
         </Box>
     );
 }

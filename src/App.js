@@ -49,7 +49,7 @@ function App() {
           <Routes>
             <Route path='/feedback' element={<Feedback />} />
             <Route path='/login' element={<Login setIsAdmin={setIsAdmin} />} />
-            <Route path='/adduser' element={<AddNewUser isParent={true} />} />
+            <Route path='/adduser' element={<AddNewUser isParent={true} isEdit={false}/>} />
             <Route path='/error' element={<ErrorPage />} />
             <Route path='/' element={<Main uiDetails={uiDetails} isAdmin={isAdmin} setIsAdmin={setIsAdmin} />} />
           </Routes>
