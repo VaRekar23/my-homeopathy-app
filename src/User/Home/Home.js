@@ -99,6 +99,7 @@ function Home({uiDetails, setActiveComponent, setConsultationData}) {
             </Paper>
 
             { /* Partition Reviews*/}
+            {homeDetails.overall_feedback.totalCount!==0 &&
             <Paper className='custom-paper' elevation={0}>
                 <Typography variant='h6' className='custom-center'>{uiDetails.reviews}</Typography>
                 <Box className='custom-center'>
@@ -115,6 +116,7 @@ function Home({uiDetails, setActiveComponent, setConsultationData}) {
                     </ScrollContainer>
                 </CenteredContainer>
             </Paper>
+            }
 
         </StyledContainer>
     );

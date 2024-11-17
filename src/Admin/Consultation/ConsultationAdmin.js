@@ -29,7 +29,7 @@ function ConsultationAdmin() {
 
     const handleAddParent = () => {
         const lastIndex = treatmentDetails.length>0 ? treatmentDetails[treatmentDetails.length-1].id : -1;
-        setTreatmentDetails([...treatmentDetails, {id: String(parseInt(lastIndex,10)+1), image: '', name: '', subCategoryList : [{id: String(parseInt(lastIndex,10)+1)+'-0', categoryId: String(parseInt(lastIndex,10)+1), name: ''}]}]);
+        setTreatmentDetails([...treatmentDetails, {id: String(parseInt(lastIndex,10)+1), image: '', name: '', subCategoryList : [{id: String(parseInt(lastIndex,10)+1)+'-0', categoryId: String(parseInt(lastIndex,10)+1), name: '', question_id: ''}]}]);
     };
 
     const handleAddChild = (parentIndex) => {
@@ -37,7 +37,7 @@ function ConsultationAdmin() {
         const lastIndex = newTreatmentDetails[parentIndex].subCategoryList[newTreatmentDetails[parentIndex].subCategoryList.length-1].id;
         const parts = lastIndex.split('-');
         const newIndex = parseInt(parts[1])+1;
-        const newSubCategoryList = {id: parentIndex+'-'+newIndex, categoryId: parentIndex, name: ''};
+        const newSubCategoryList = {id: parentIndex+'-'+newIndex, categoryId: parentIndex, name: '', question_id: ''};
         newTreatmentDetails[parentIndex].subCategoryList.push(newSubCategoryList);
         setTreatmentDetails(newTreatmentDetails);
     };

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Accordion, AccordionSummary, AccordionDetails, Typography, Grid, Paper } from '@mui/material';
+import { Accordion, AccordionSummary, AccordionDetails, Typography, Grid, Paper, Avatar } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 function TreatmentProvided({treatmentCategory, setActiveComponent, setConsultationData}) {
@@ -15,6 +15,7 @@ function TreatmentProvided({treatmentCategory, setActiveComponent, setConsultati
                 <Grid item xs={12} key={index}>
                     <Accordion>
                         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                            <Avatar src={`/Images/${item.image}`} alt={item.image} sx={{ width: 40, height: 40, marginRight: 2 }} />
                             <Typography variant='h6'>{item.name}</Typography>
                         </AccordionSummary>
                         <AccordionDetails>

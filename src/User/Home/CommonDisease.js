@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent, Typography } from '@mui/material';
+import { Avatar, Card, CardContent, Typography } from '@mui/material';
 import {styled} from '@mui/system';
 
 function CommonDisease({ disease, imgPath }) {
@@ -10,9 +10,12 @@ function CommonDisease({ disease, imgPath }) {
 
     return (
         <DiseaseCard>
-            <CardContent>
+            <CardContent sx={{ display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    textAlign: 'center', }}>
                 <Typography variant='h6'>{disease}</Typography>
-                <img src={imgPath} alt={disease} style={{ width: '100%', height: 'auto' }} />
+                <Avatar src={`/Images/${imgPath}`} alt={disease} variant='rounded' sx={{ width: 80, height: 80, mb:2 }}/>
             </CardContent>
         </DiseaseCard>
     );
