@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Header from "./Header/Header";
-import { Box, Container, Toolbar } from "@mui/material";
+import { Box, Container, Toolbar, useTheme } from "@mui/material";
 import Footer from "./Header/Footer";
 import Consultation from "./User/Consultation/Consultation";
 import About from "./User/About/About";
@@ -20,6 +20,7 @@ function Main({uiDetails, isAdmin, setIsAdmin}) {
     const { user } = location.state || {};
     const [userData, setUserData] = useState(user ? user.encryptedData : null);
     const [consultationData, setConsultationData] = useState({ treatmentId: '', subTreatmentId: '' });
+    const theme = useTheme();
 
     useEffect(() => {
         if (sessionStorage.getItem('user')!==null) {

@@ -1,4 +1,4 @@
-import { Box, Button, TextField, Typography, CircularProgress, Alert } from '@mui/material';
+import { Box, Button, TextField, Typography, CircularProgress, Alert, useTheme } from '@mui/material';
 import React, {useEffect, useState} from 'react';
 import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 import { auth } from '../Helper/FirebaseConfig';
@@ -14,6 +14,7 @@ function Login({setIsAdmin}) {
     const [loading, setLoading] = useState(false);
     const [showAddNewUser, setShowAddNewUser] = useState(false);
     const navigate = useNavigate();
+    const theme = useTheme();
 
     useEffect(() => {
         if (sessionStorage.getItem('user')!==null)
@@ -109,10 +110,10 @@ function Login({setIsAdmin}) {
             height: '100vh'  // Makes the Box take up the full viewport height
             }}
         >
-            <Typography variant='h6' gutterBottom>Login</Typography>
+            <Typography variant='h6' gutterBottom color='primary'><b>Login</b></Typography>
             {!verificationId ? (
                 <>
-                    <Typography variant='subtitle1'>Enter Mobile Number</Typography>
+                    <Typography variant='subtitle1' color='primary'>Enter Mobile Number</Typography>
                     <Alert severity='info'>This number will be used to contact you!!</Alert>
                     <form onSubmit={requestOtp} >
                         <TextField label='Phone Number' variant='outlined' fullWidth margin='normal' value={phone} type='number' onChange={(e) => setPhone(e.target.value)} />
@@ -125,8 +126,8 @@ function Login({setIsAdmin}) {
                 </>
             ) : (
                 <>
-                    <Typography variant='subtitle1'>Enter Confirmation Code</Typography>
-                    <Typography variant='body1'>Enter the code received on {phone}</Typography>
+                    <Typography variant='subtitle1' color='primary'>Enter Confirmation Code</Typography>
+                    <Typography variant='body2'>Enter the code received on {phone}</Typography>
 
                     <form onSubmit={verifyOtp} >
                         <TextField label='OTP' variant='outlined' fullWidth margin='normal' value={otp} type='number' onChange={(e) => setOTP(e.target.value)} />

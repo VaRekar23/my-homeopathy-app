@@ -69,7 +69,7 @@ function About({uiDetails}) {
                     <Container className='clinic-map'>
                         <iframe 
                             title="Map"
-                            src={address.map_url} 
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3753.0276803532174!2d72.71282687499793!3d19.83878168152923!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be71f00085f4515%3A0xf9b3bc0b6bfe74fb!2sDhanmeher's%20Health%20Care%20Clinic!5e0!3m2!1sen!2sin!4v1731990215529!5m2!1sen!2sin"
                             width="600" 
                             height="450" 
                             style={{border:0 }} 

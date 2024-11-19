@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { decryptData } from '../../Helper/Secure';
 import { fetchUserData, storeData, fetchData } from '../../Helper/ApiHelper';
-import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Card, CardContent, CircularProgress, Divider, Grid, List, ListItem, Paper, Rating, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Card, CardContent, CircularProgress, Divider, Grid, List, ListItem, Paper, Rating, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography, useTheme } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import dayjs from 'dayjs';
 
@@ -12,6 +12,7 @@ function OrdersAdmin () {
     const [isLoading, setIsLoading] = useState(true);
     const [status, setStatus] = useState('');
     const [filterText, setFilterText] = useState('');
+    const theme = useTheme();
 
     const getAge = (dob) => {
         const today = dayjs();
@@ -425,7 +426,7 @@ function OrdersAdmin () {
                 
                 <List>
                     {filteredOrders.map((order, index) => (
-                        <Paper key={index} elevation={3} sx={{ marginBottom: '10px', padding: '15px' }}>
+                        <Paper key={index} elevation={3} sx={{ marginBottom: '10px', padding: '15px', background: theme.palette.custom.background }}>
                             <ListItem>
                                 <Box sx={{ width: '100%' }}>
                                 <Accordion>

@@ -4,13 +4,15 @@ import { fetchUserData, storeData } from '../../Helper/ApiHelper';
 import { Accordion, AccordionDetails, AccordionSummary, Alert, Box, Button, Card, CardContent, CircularProgress, Grid, List, ListItem, Paper, Rating, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import dayjs from 'dayjs';
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom';
+import { useTheme } from '@mui/material/styles';
 
 function Orders () {
     const [orderDetails, setOrderDetails] = useState([]);
     const [filteredOrders, setFilteredOrders] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
+    const theme = useTheme();
     const [filterText, setFilterText] = useState('');
 
     useEffect(() => {
@@ -296,7 +298,7 @@ function Orders () {
                 
                 <List>
                     {filteredOrders.map((order, index) => (
-                        <Paper key={index} elevation={3} sx={{ marginBottom: '10px', padding: '15px' }}>
+                        <Paper key={index} elevation={3} sx={{ marginBottom: '10px', padding: '15px', background: theme.palette.custom.background }}>
                             <ListItem>
                                 <Box sx={{ width: '100%' }}>
                                     <Accordion>

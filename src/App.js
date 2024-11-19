@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Box } from '@mui/material';
+import { Box, createTheme, CssBaseline, ThemeProvider } from '@mui/material';
 import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-router-dom';
 import { fetchDataWithParam } from './Helper/ApiHelper';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -9,15 +9,44 @@ import Login from './Login/Login';
 import Main from './Main';
 import AddNewUser from './Login/AddNewUser';
 
+const generateTheme = (myColor) => {
+  return createTheme({
+    palette: {
+      primary: {
+        main: myColor ? myColor.primary : '#1976d2', // Default primary color
+        contrastText: myColor ? myColor.primaryText : '#ffffff',
+      },
+      secondary: {
+        main: myColor ? myColor.secondary : '#ff4081', // Default secondary color
+        contrastText: myColor ? myColor.secondaryText : '#ffffff',
+      },
+      background: {
+        default: myColor ? myColor.background : '#ffffff',
+      },
+      custom : {
+        background: myColor ? myColor.background : '#ffffff',
+        blue : myColor ? myColor.blue : '#0000ff',
+      },
+    },
+    typography: {
+      fontFamily: 'Roboto, Arial, sans-serif',
+    },
+  });
+};
+
 function App() {
   const [uiDetails, setUiDetails] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [theme, setTheme] = useState(generateTheme());
 
   useEffect(() => {
     const getUIDetails = async () => {
       try {
         const uiData = await fetchDataWithParam('ui-details', 'english');
+        console.log('App', uiData);
+        const newTheme = generateTheme(uiData.color);
+        setTheme(newTheme);
         setUiDetails(uiData);
       } catch(error) {
         console.log('Error App', error);
@@ -44,7 +73,18 @@ function App() {
       </>)
   } else {
     return (
-      <>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <style>
+          {`:root {
+            --primary-color: ${theme.palette.primary.main};
+            --primary-text-color: ${theme.palette.primary.contrastText};
+            --secondary-color: ${theme.palette.secondary.main};
+            --secondary-text-color: ${theme.palette.secondary.contrastText};
+            --background-color: ${theme.palette.custom.background};
+            --custom-blue: ${theme.palette.custom.blue};
+          }`}
+        </style>
         <Router>
           <Routes>
             <Route path='/feedback' element={<Feedback />} />
@@ -54,7 +94,7 @@ function App() {
             <Route path='/' element={<Main uiDetails={uiDetails} isAdmin={isAdmin} setIsAdmin={setIsAdmin} />} />
           </Routes>
         </Router>
-      </>
+      </ThemeProvider>
     )
   }
 }

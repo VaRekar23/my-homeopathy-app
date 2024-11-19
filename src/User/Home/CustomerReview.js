@@ -1,13 +1,19 @@
 import React from 'react';
-import { Typography, Box, Rating, Card, CardContent } from '@mui/material';
+import { Typography, Box, Rating, Card, CardContent, useTheme } from '@mui/material';
 import { decryptData } from '../../Helper/Secure';
 
 
 function CustomerReview({customerRating, overallRating}) {
+    const theme = useTheme();
     return (
         <>
             {customerRating.map((item, index) => (
-                <Card sx={{ minWidth: 275, marginRight: '15px' }}>
+                <Card sx={{ minWidth: 275, 
+                            marginRight: '15px', 
+                            border: '2px solid',
+                            borderColor: theme.palette.custom.blue, 
+                            borderRadius: '8px',
+                            background: theme.palette.custom.background}}>
                     <CardContent>
                         <Box sx={{ display: 'flex',
                                     flexDirection: 'column',

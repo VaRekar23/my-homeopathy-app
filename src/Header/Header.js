@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { AppBar, Toolbar, IconButton, Menu, MenuItem, useMediaQuery, Box } from '@mui/material';
+import { AppBar, Toolbar, IconButton, Menu, MenuItem, useMediaQuery, Box, Typography, Avatar } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useTheme } from '@mui/material/styles';
 import './Header.css';
@@ -101,8 +101,11 @@ function Header({userDetails, menuDetails, setActiveComponent, setIsAdmin}) {
         <AppBar position='fixed' className='custom-appbar'>
             <Toolbar className='custom-toolbar'>
                 {/* Site Name as Home Link */}
-                <Box sx={{ display:'flex', alignItems: 'center', flexGrow: 1 }}>
-                    <img src='/SereneCare.png' alt='Logo' style={{ height: '70px', marginRight: '10px' }} onClick={() => window.location.href = '/'} />
+                <Avatar src='/Homeopathy.png' />
+                <Box sx={{ display:'flex', flexDirection:'column', alignItems: 'left', flexGrow: 1 }} onClick={() => window.location.href = '/'}>
+                    {/* <img src='/SereneCare.png' alt='Logo' style={{ height: '70px', marginRight: '10px' }} onClick={() => window.location.href = '/'} /> */}
+                    <Typography variant='h5' sx={{ color: theme.palette.primary.contrastText}}>SERENE CURE</Typography>
+                    <Typography variant='subtitle2' sx={{ color: theme.palette.primary.contrastText}}>Calm. Natural healing for life</Typography>
                 </Box>
 
                 {/* Menu items */}

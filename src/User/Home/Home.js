@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {styled} from '@mui/system';
-import { Box, CircularProgress, Container, Paper, Rating, Typography } from '@mui/material';
+import { Box, CircularProgress, Container, Paper, Rating, Typography, useTheme } from '@mui/material';
 import CommonDisease from './CommonDisease';
 import TreatmentProvided from './TreatmentProvided';
 import CustomerReview from './CustomerReview';
@@ -11,6 +11,7 @@ import ErrorPage from '../../ErrorPage';
 function Home({uiDetails, setActiveComponent, setConsultationData}) {
     const [homeDetails, setHomeDetails] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const theme = useTheme();
 
     useEffect(() => {
         const getUIDetails = async () => {
