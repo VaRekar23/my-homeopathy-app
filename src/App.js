@@ -44,7 +44,6 @@ function App() {
     const getUIDetails = async () => {
       try {
         const uiData = await fetchDataWithParam('ui-details', 'english');
-        console.log('App', uiData);
         const newTheme = generateTheme(uiData.color);
         setTheme(newTheme);
         setUiDetails(uiData);

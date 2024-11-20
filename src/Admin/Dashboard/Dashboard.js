@@ -1,4 +1,4 @@
-import { Box, Button, CircularProgress, FormControl, InputLabel, MenuItem, Select, Switch, Typography, Card, CardContent, FormGroup, FormControlLabel, Grid, TextField, Divider, Paper } from '@mui/material';
+import { Box, Button, CircularProgress, FormControl, InputLabel, MenuItem, Select, Switch, Typography, Card, CardContent, FormGroup, FormControlLabel, Grid, TextField, Divider, Paper, useTheme } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 import { decryptData, encryptData } from '../../Helper/Secure';
 import { fetchData, storeData } from '../../Helper/ApiHelper';
@@ -15,6 +15,7 @@ function Dashboard({userDetails}) {
     const [loading, setLoading] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [status, setStatus] = useState('');
+    const theme = useTheme();
 
     useEffect(() => {
         const getDashboardDetails = async () => {
@@ -121,7 +122,7 @@ function Dashboard({userDetails}) {
     } else {
         return (
             <>
-            <Box sx={{display:'flex', flexDirection: 'column', alignItems:'left', padding:2, border: '1px solid #ccc', borderRadius: '8px', gap:2}}>
+            <Box sx={{display:'flex', flexDirection: 'column', alignItems:'left', padding:2, border: '1px solid', borderColor: theme.palette.custom.blue, borderRadius: '8px', gap:2}}>
                 <FormGroup>
                     <FormControlLabel control={
                         <Switch checked={commonCharge.isDiscount} inputProps={{ 'aria-label': 'controlled' }} onChange={handleIsDiscountChange}/>
@@ -159,7 +160,7 @@ function Dashboard({userDetails}) {
                 <Button variant="contained" color="primary" onClick={handleCommonChargeSubmit} sx={{ marginLeft: 'auto' }}>Update</Button>
             </Box>
 
-            <Box sx={{display:'flex', flexDirection: 'row', alignItems:'center', padding:2, border: '1px solid #ccc', borderRadius: '8px', gap:2, marginTop: '10px'}}>
+            <Box sx={{display:'flex', flexDirection: 'row', alignItems:'center', padding:2, border: '1px solid', borderColor: theme.palette.custom.blue, borderRadius: '8px', gap:2, marginTop: '10px'}}>
                 <Grid container direction='row' spacing={2} sx={{padding:2}}>
                     <Grid container spacing={2}>
                         <Grid item xs={6}>
@@ -223,7 +224,7 @@ function Dashboard({userDetails}) {
             </Box>
 
             {userData && (
-            <Box sx={{display:'flex', flexDirection: 'row', alignItems:'left', padding:2, border: '1px solid #ccc', borderRadius: '8px', gap:2, marginTop: '10px'}}>
+            <Box sx={{display:'flex', flexDirection: 'row', alignItems:'left', padding:2, border: '1px solid', borderColor: theme.palette.custom.blue, borderRadius: '8px', gap:2, marginTop: '10px'}}>
                 <FormControl variant='standard' sx={{ minWidth: 200 }}>
                             <InputLabel>Are you Admin?</InputLabel>
                             <Select name='isAdmin'

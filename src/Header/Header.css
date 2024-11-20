@@ -8,8 +8,8 @@
 }
 
 .custom-primary-menu.MuiMenuItem-root {
-  background-color: var(--secondary-color);
-  color: var(--secondary-text-color);
+  background-color: var(--primary-text-color);
+  color: var(--primary-color);
   border-radius: 5mm;
 }
 
