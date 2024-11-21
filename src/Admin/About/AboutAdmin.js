@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { fetchDataWithParam, updateUIData, uploadImage } from "../../Helper/ApiHelper";
 import About from "../../User/About/About";
-import { Button, IconButton, Paper, TextField } from "@mui/material";
+import { Button, IconButton, Paper, TextField, Box, CircularProgress } from "@mui/material";
 import { AddCircle, Cancel, EditNote } from "@mui/icons-material";
 import SaveIcon from '@mui/icons-material/Save';
 import './AboutAdmin.css';
@@ -20,6 +20,7 @@ function AboutAdmin({uiDetails}) {
     const [isEdit, setIsEdit] = useState(false);
     const [status, setStatus] = useState('');
     const [imageFile, setImageFile] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
 
     const onEditClick = () => {
         setIsEdit(true);
@@ -78,11 +79,11 @@ function AboutAdmin({uiDetails}) {
     };
 
     const onSaveClick = async (e) => {
+        setIsLoading(true);
         const formData = new FormData();
         formData.append("file", imageFile);
 
         const fileUploadResponse = uploadImage(formData);
-        console.log(fileUploadResponse);
         const fileURL = await fileUploadResponse;
 
         const payload = {
@@ -97,6 +98,7 @@ function AboutAdmin({uiDetails}) {
 
     useEffect(() => {
         setIsEdit(false);
+        setIsLoading(false);
 
         const getUIDetails = async () => {
             try {
@@ -110,7 +112,20 @@ function AboutAdmin({uiDetails}) {
           getUIDetails();
     }, [status]);
 
-    if (isEdit) {
+    if (isLoading) {
+        return (
+          <>
+            <Box sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: '100vh'  // Makes the Box take up the full viewport height
+              }}
+            >
+              <CircularProgress color="primary" size={50} />
+            </Box>
+          </>);
+    } else if (isEdit) {
         return (
             <>
                 <TextField label='dr_name' name='dr_name' value={aboutDetails.dr_name} 
