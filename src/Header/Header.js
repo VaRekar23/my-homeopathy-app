@@ -104,8 +104,8 @@ function Header({userDetails, menuDetails, setActiveComponent, setIsAdmin}) {
                 <Avatar src='/Homeopathy.png' />
                 <Box sx={{ display:'flex', flexDirection:'column', alignItems: 'left', flexGrow: 1 }} onClick={() => window.location.href = '/'}>
                     {/* <img src='/SereneCare.png' alt='Logo' style={{ height: '70px', marginRight: '10px' }} onClick={() => window.location.href = '/'} /> */}
-                    <Typography variant='h5' sx={{ color: theme.palette.primary.contrastText}}>SERENE CURE</Typography>
-                    <Typography variant='subtitle2' sx={{ color: theme.palette.primary.contrastText}}>Calm. Natural healing for life</Typography>
+                    <Typography variant='h6' sx={{ color: theme.palette.primary.contrastText}}>SERENE CURE</Typography>
+                    <Typography variant='caption' sx={{ color: theme.palette.primary.contrastText}}>Calm. Natural healing for life</Typography>
                 </Box>
 
                 {/* Menu items */}

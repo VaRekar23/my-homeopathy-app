@@ -39,7 +39,6 @@ function Dashboard({userDetails}) {
         getDashboardDetails();
         if (sessionStorage.getItem('user')!==null) {
             setUserData(decryptData(sessionStorage.getItem('user')));
-            console.log('Dashboard User in Session');
         }
     }, []);
 

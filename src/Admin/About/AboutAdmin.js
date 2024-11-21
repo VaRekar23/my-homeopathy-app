@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { fetchDataWithParam, updateUIData } from "../../Helper/ApiHelper";
+import { fetchDataWithParam, updateUIData, uploadImage } from "../../Helper/ApiHelper";
 import About from "../../User/About/About";
 import { Button, IconButton, Paper, TextField } from "@mui/material";
 import { AddCircle, Cancel, EditNote } from "@mui/icons-material";
@@ -19,6 +19,7 @@ function AboutAdmin({uiDetails}) {
 
     const [isEdit, setIsEdit] = useState(false);
     const [status, setStatus] = useState('');
+    const [imageFile, setImageFile] = useState(null);
 
     const onEditClick = () => {
         setIsEdit(true);
@@ -77,7 +78,19 @@ function AboutAdmin({uiDetails}) {
     };
 
     const onSaveClick = async (e) => {
-        const response = updateUIData('update-aboutdetails', aboutDetails, 'english');
+        const formData = new FormData();
+        formData.append("file", imageFile);
+
+        const fileUploadResponse = uploadImage(formData);
+        console.log(fileUploadResponse);
+        const fileURL = await fileUploadResponse;
+
+        const payload = {
+            ...aboutDetails,
+            img_path: fileURL,
+        }
+
+        const response = updateUIData('update-aboutdetails', payload, 'english');
 
         setStatus(response);
     };
@@ -89,7 +102,6 @@ function AboutAdmin({uiDetails}) {
             try {
               const uiData = await fetchDataWithParam('ui-details', 'english');
               setUpdatedUiDetails(uiData.about);
-              console.log('UI Data', uiData.about);
             } catch(error) {
               console.error('Error fetching documents', error);
             }
@@ -109,6 +121,9 @@ function AboutAdmin({uiDetails}) {
                 
                 <TextField label='intro' name='intro' value={aboutDetails.intro} 
                         onChange={handleOnChange} fullWidth margin='normal' multiline />
+
+                <TextField label='Upload Image' type='file' InputLabelProps={{ shrink: true }}
+                        onChange={(e) => setImageFile(e.target.files[0])} />
 
                 <Paper elevation={2} sx={{ padding: 2 }} >
                     {aboutDetails.addresses.map((address, index) => (

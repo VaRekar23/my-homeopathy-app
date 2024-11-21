@@ -13,7 +13,8 @@ function CustomerReview({customerRating, overallRating}) {
                             border: '2px solid',
                             borderColor: theme.palette.custom.blue, 
                             borderRadius: '8px',
-                            background: theme.palette.custom.background}}>
+                            background: theme.palette.custom.background}}
+                    key={index}>
                     <CardContent>
                         <Box sx={{ display: 'flex',
                                     flexDirection: 'column',

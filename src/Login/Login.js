@@ -1,4 +1,4 @@
-import { Box, Button, TextField, Typography, CircularProgress, Alert, useTheme } from '@mui/material';
+import { Box, Button, TextField, Typography, CircularProgress, Alert, useTheme, Avatar } from '@mui/material';
 import React, {useEffect, useState} from 'react';
 import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 import { auth } from '../Helper/FirebaseConfig';
@@ -110,7 +110,13 @@ function Login({setIsAdmin}) {
             height: '100vh'  // Makes the Box take up the full viewport height
             }}
         >
-            <Typography variant='h6' gutterBottom color='primary'><b>Login</b></Typography>
+            <Box sx={{ display: 'flex', padding: 2 }}>
+                <Avatar src='/Homeopathy.png' sx={{ width: 50, height: 50, mb:2 }} />
+                <Box sx={{ display:'flex', flexDirection:'column', alignItems: 'left', flexGrow: 1 }} >
+                    <Typography variant='h5' sx={{ color: theme.palette.primary.main}}>SERENE CURE</Typography>
+                    <Typography variant='subtitle2' sx={{ color: theme.palette.primary.main}}>Calm. Natural healing for life</Typography>
+                </Box>
+            </Box>
             {!verificationId ? (
                 <>
                     <Typography variant='subtitle1' color='primary'>Enter Mobile Number</Typography>

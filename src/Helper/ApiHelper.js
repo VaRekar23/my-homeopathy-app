@@ -1,6 +1,9 @@
 import axios from 'axios';
+import { getDownloadURL, ref } from 'firebase/storage';
+import { storage } from './FirebaseConfig';
 
 const api_url = process.env.REACT_APP_API_URL;
+const api_upload_file = process.env.REACT_APP_UPLOADFILE_API_URL;
 
 export const fetchData = async(apiEndpoint) => {
     try {
@@ -90,3 +93,21 @@ export const fetchUserData = async(apiEndpoint, param) => {
         throw error;
     }
 };
+
+export const uploadImage = async(file) => {
+    try {
+        const response = await axios.post(api_upload_file,file, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            }
+        });
+
+        const uploadedImageName = response.data;
+        const fileRef = ref(storage, uploadedImageName);
+        const url = await getDownloadURL(fileRef);
+        return url;
+    } catch(error) {
+        console.error('Error uploading documents', error);
+        throw error;
+    }
+}
