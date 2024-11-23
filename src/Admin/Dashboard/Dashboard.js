@@ -1,4 +1,4 @@
-import { Box, Button, CircularProgress, FormControl, InputLabel, MenuItem, Select, Switch, Typography, Card, CardContent, FormGroup, FormControlLabel, Grid, TextField, Divider, Paper, useTheme } from '@mui/material';
+import { Box, Button, CircularProgress, FormControl, InputLabel, MenuItem, Select, Switch, Typography, Card, CardContent, FormGroup, FormControlLabel, Grid, TextField, Divider, Paper, useTheme, IconButton } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 import { decryptData, encryptData } from '../../Helper/Secure';
 import { fetchData, storeData } from '../../Helper/ApiHelper';
@@ -6,6 +6,7 @@ import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import dayjs from 'dayjs';
+import { AddCircle } from '@mui/icons-material';
 
 function Dashboard({userDetails}) {
     //const [userData, setUserData] = useState(decryptData(userDetails));
@@ -24,10 +25,11 @@ function Dashboard({userDetails}) {
                 setDashboardData(dashboardDetails);
                 setCommonCharge({
                     consultationCharge: dashboardDetails.consultationCharge,
+                    reconsultationCharge: dashboardDetails.reconsultationCharge,
                     isDiscount: dashboardDetails.isDiscount,
                     discountTillDate: dashboardDetails.isDiscount ? dayjs(dashboardDetails.discountTillDate) : dayjs(),
                     discountPercentage: dashboardDetails.discountPercentage,
-                    deliveryCharge: dashboardDetails.deliveryCharge
+                    deliveryCharge: dashboardDetails.deliveryCharge || [{ postalCodePrefix: '', region: '', charges: 0 }]
                 });
             } catch(error) {
                 console.error('Error fetching documents', error);
@@ -98,6 +100,19 @@ function Dashboard({userDetails}) {
 
     }, []);
 
+    const handleDeliveryChargeOnChange = (index, field, value) => {
+        const newDeliveryCharge = [...commonCharge.deliveryCharge];
+        newDeliveryCharge[index][field]=value;
+        setCommonCharge({...commonCharge, deliveryCharge:newDeliveryCharge});
+    };
+
+    const handleDeliveryChargeOnAdd = () => {
+        setCommonCharge({
+            ...commonCharge,
+            deliveryCharge: [...commonCharge.deliveryCharge, { postalCodePrefix: '', region: '', charges: 0 }]
+        });
+    };
+
     const handleDiscountDateChange = (discountDate) => {
         setCommonCharge((previousState) => ({
             ...previousState,
@@ -151,10 +166,31 @@ function Dashboard({userDetails}) {
                                     type='number' onChange={handleCommonChargeChange} fullWidth margin='normal' />
                     </Grid>
                     <Grid item xs={6}>
-                        <TextField label='Delivery Charge' name='deliveryCharge' value={commonCharge.deliveryCharge} 
+                        <TextField label='ReConsultation Charge' name='reconsultationCharge' value={commonCharge.reconsultationCharge} 
                                     type='number' onChange={handleCommonChargeChange} fullWidth margin='normal' />
                     </Grid>
                 </Grid>
+                <Divider style={{ margin: '10px 0' }} />
+
+                {commonCharge.deliveryCharge.map((deliveryChrg, index) => (
+                    <Grid container spacing={2} key={index}>
+                        <Grid item xs={4}>
+                            <TextField label='Postal Code Prefix' name='postalCodePrefix' value={deliveryChrg.postalCodePrefix} 
+                                        type='text' onChange={(e) => handleDeliveryChargeOnChange(index, 'postalCodePrefix', e.target.value)} fullWidth margin='normal' />
+                        </Grid>
+                        <Grid item xs={4}>
+                            <TextField label='Region' name='region' value={deliveryChrg.region} 
+                                        type='text' onChange={(e) => handleDeliveryChargeOnChange(index, 'region', e.target.value)} fullWidth margin='normal' />
+                        </Grid>
+                        <Grid item xs={4}>
+                            <TextField label='Charges' name='charges' value={deliveryChrg.charges} 
+                                        type='number' onChange={(e) => handleDeliveryChargeOnChange(index, 'charges', e.target.value)} fullWidth margin='normal' />
+                        </Grid>
+                    </Grid>
+                ))}
+                <IconButton color="success" onClick={() => handleDeliveryChargeOnAdd()} >
+                    <AddCircle />
+                </IconButton>
 
                 <Button variant="contained" color="primary" onClick={handleCommonChargeSubmit} sx={{ marginLeft: 'auto' }}>Update</Button>
             </Box>

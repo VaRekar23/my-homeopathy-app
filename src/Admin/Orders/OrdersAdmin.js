@@ -95,6 +95,7 @@ function OrdersAdmin () {
     const handleItemChange = (orderIndex, itemIndex, field, value) => {
         const updatedOrders = [...orderDetails];
         updatedOrders[orderIndex].items[itemIndex][field] = value;
+        const deliveryChr = deliveryCharge(updatedOrders[orderIndex]);
 
         const amount = updatedOrders[orderIndex].items[itemIndex]['amount'];
         const qty = updatedOrders[orderIndex].items[itemIndex]['qty'];
@@ -114,9 +115,9 @@ function OrdersAdmin () {
         updatedOrders[orderIndex].isDiscount = commonCharge.isDiscount;
         updatedOrders[orderIndex].discountPercentage = commonCharge.discountPercentage;
         updatedOrders[orderIndex].consultationCharge = commonCharge.consultationCharge;
-        updatedOrders[orderIndex].deliveryCharge = commonCharge.deliveryCharge;
+        updatedOrders[orderIndex].deliveryCharge = deliveryChr;
 
-        updatedOrders[orderIndex].totalAmount = parseFloat(totalAmount-discountAmount + commonCharge.consultationCharge + commonCharge.deliveryCharge).toFixed(2);
+        updatedOrders[orderIndex].totalAmount = parseFloat(totalAmount-discountAmount + commonCharge.consultationCharge + deliveryChr).toFixed(2);
         setOrderDetails(updatedOrders);
     };
 
@@ -138,6 +139,22 @@ function OrdersAdmin () {
         updatedOrders[orderIndex][field] = value;
         setOrderDetails(updatedOrders);
     };
+
+    const deliveryCharge = (order) => {
+        let defaultCharge = 0;
+        const pinCode = decryptData(order.userData).pinCode;
+        for (let deliveryObj of commonCharge.deliveryCharge) {
+            if (deliveryObj.postalCodePrefix === "XXX") {
+                defaultCharge = deliveryObj.deliveryCharge;
+            }
+            const prefixPattern = deliveryObj.postalCodePrefix.replace(/X/g, "\\d");
+            const regex = new RegExp(`^${prefixPattern}`);
+            if (regex.test(pinCode)) {
+                return deliveryObj.charges;
+            }
+        }
+        return defaultCharge;
+    }
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -222,7 +239,7 @@ function OrdersAdmin () {
                             Consultation Charge: ₹{commonCharge.consultationCharge}
                         </Typography>
                         <Typography variant="body2" sx={{ mt: 2 }}>
-                            Delivery Charge: ₹{commonCharge.deliveryCharge}
+                            Delivery Charge: ₹{deliveryCharge(order)}
                         </Typography>
                         <Typography variant="subtitle1" sx={{ mt: 2 }}>
                             Total Amount: ₹{order.totalAmount}
