@@ -114,7 +114,8 @@ function Consultation ({consultationData})  {
                                 .filter(([key, val]) => {
                                     const match = val.userId === formData.userId &&
                                                 val.treatmentId === formData.treatmentId &&
-                                                val.subTreatmentId === value;
+                                                val.subTreatmentId === value &&
+                                                (val.status==='FP' || val.status==='C');
                                     return match;
                                 })
                                 .sort(([keyA, valA], [keyB, valB]) => {
@@ -125,7 +126,6 @@ function Consultation ({consultationData})  {
                                     acc[key] = value;
                                     return acc;
                                 }, {});
-
             const latestOrder = Object.entries(filteredOrder)[0]?.[1] || null;
             if (latestOrder) {
                 setExistingOrder(latestOrder);
