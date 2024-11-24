@@ -3,7 +3,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import { fetchData, fetchUserData, storeData } from '../../Helper/ApiHelper';
 import { decryptData } from '../../Helper/Secure';
-import { Alert, Button, Divider, FormControl, Grid, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
+import { Alert, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, FormControl, Grid, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
 
 
 function Consultation ({consultationData})  {
@@ -12,7 +12,8 @@ function Consultation ({consultationData})  {
         subTreatmentId: consultationData.subTreatmentId,
         userId: '',
         additionalInfo: '',
-        questions: []
+        questions: [],
+        followUpOrderId: null
     });
 
     const [isLoading, setIsLoading] = useState(true);
@@ -26,6 +27,9 @@ function Consultation ({consultationData})  {
     const [selectedOptions, setSelectedOptions] = useState({});
     const [visibleQuestions, setVisibleQuestions] = useState([]);
     const [status, setStatus] = useState('');
+    const [orderDetails, setOrderDetails] = useState([]);
+    const [existingOrder, setExistingOrder] = useState(null);
+    const [showFollowUpDialog, setShowFollowUpDialog] = useState(false);
 
     useEffect(() => {
         const getTreatmentDetails = async () => {
@@ -67,6 +71,8 @@ function Consultation ({consultationData})  {
         const getAllUserDetails = async () => {
             try {
                 const childUsers = await fetchUserData('get-allusers', userData.userId);
+                const orders = await fetchUserData('get-ordersbyId', userData.userId);
+                setOrderDetails(orders);
                 childUsers.forEach((user, index) => {
                     const userData = decryptData(user.encryptedData);
                     if (!userData.isDeleted) {
@@ -103,7 +109,32 @@ function Consultation ({consultationData})  {
             } else {
                 setIsVisible(true);
             }
-        };
+
+            const filteredOrder = Object.entries(orderDetails)
+                                .filter(([key, val]) => {
+                                    const match = val.userId === formData.userId &&
+                                                val.treatmentId === formData.treatmentId &&
+                                                val.subTreatmentId === value;
+                                    return match;
+                                })
+                                .sort(([keyA, valA], [keyB, valB]) => {
+                                    // Sort by createDate.seconds in descending order
+                                    return valB.createDate.seconds - valA.createDate.seconds;
+                                })
+                                .reduce((acc, [key, value]) => {
+                                    acc[key] = value;
+                                    return acc;
+                                }, {});
+
+            const latestOrder = Object.entries(filteredOrder)[0]?.[1] || null;
+            if (latestOrder) {
+                setExistingOrder(latestOrder);
+                setShowFollowUpDialog(true);
+            } else {
+                setExistingOrder(null);
+                setShowFollowUpDialog(false);
+            }
+        }
         setFormData({
             ...formData,
             [name]: value,
@@ -163,6 +194,16 @@ function Consultation ({consultationData})  {
                 </FormControl>
             </Box>
         );
+    };
+
+    const handleFollowUpConfirm = () => {
+        setFormData({ ...formData, followUpOrderId: existingOrder.orderId });
+        setShowFollowUpDialog(false);
+    };
+    
+    const handleFollowUpCancel = () => {
+        setFormData({ ...formData, followUpOrderId: null });
+        setShowFollowUpDialog(false);
     };
 
     const handleSubmit = () => {
@@ -277,6 +318,26 @@ function Consultation ({consultationData})  {
                     )}
                     
                 </Box>
+                <Dialog open={showFollowUpDialog} onClose={handleFollowUpCancel}>
+                    <DialogTitle>Follow Up Confirmation</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                        You have a recent order for same treatment.
+                        Are you following up for same order with ID{' '}
+                        {existingOrder?.orderId} created on{' '}
+                        {existingOrder?.createDate &&
+                            new Date(existingOrder.createDate.seconds * 1000).toLocaleDateString()}{' '}
+                        at{' '}
+                        {existingOrder?.createDate &&
+                            new Date(existingOrder.createDate.seconds * 1000).toLocaleTimeString()}
+                        ?
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleFollowUpCancel}>No</Button>
+                        <Button onClick={handleFollowUpConfirm} color="primary">Yes</Button>
+                    </DialogActions>
+                </Dialog>
             </>
         );
     }

@@ -313,6 +313,11 @@ function Orders () {
                                                 <Typography variant="body2" color="textSecondary">
                                                     Order ID: {order.orderId}
                                                 </Typography>
+                                                {order.followUpOrderId &&
+                                                    <Typography variant="caption" color="textSecondary">
+                                                        Follow up of: {order.followUpOrderId}
+                                                    </Typography>
+                                                }
                                                 <Typography variant="body2">
                                                     For: {decryptData(order.userData).isDeleted ? decryptData(order.userData).name+' (User is Deleted)' : decryptData(order.userData).name}
                                                 </Typography>

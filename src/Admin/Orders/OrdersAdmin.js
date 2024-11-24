@@ -96,6 +96,7 @@ function OrdersAdmin () {
         const updatedOrders = [...orderDetails];
         updatedOrders[orderIndex].items[itemIndex][field] = value;
         const deliveryChr = deliveryCharge(updatedOrders[orderIndex]);
+        const consultationChr = updatedOrders[orderIndex].followUpOrderId ? commonCharge.reconsultationCharge : commonCharge.consultationCharge;
 
         const amount = updatedOrders[orderIndex].items[itemIndex]['amount'];
         const qty = updatedOrders[orderIndex].items[itemIndex]['qty'];
@@ -114,10 +115,10 @@ function OrdersAdmin () {
 
         updatedOrders[orderIndex].isDiscount = commonCharge.isDiscount;
         updatedOrders[orderIndex].discountPercentage = commonCharge.discountPercentage;
-        updatedOrders[orderIndex].consultationCharge = commonCharge.consultationCharge;
+        updatedOrders[orderIndex].consultationCharge = consultationChr;
         updatedOrders[orderIndex].deliveryCharge = deliveryChr;
 
-        updatedOrders[orderIndex].totalAmount = parseFloat(totalAmount-discountAmount + commonCharge.consultationCharge + deliveryChr).toFixed(2);
+        updatedOrders[orderIndex].totalAmount = parseFloat(totalAmount-discountAmount + consultationChr + deliveryChr).toFixed(2);
         setOrderDetails(updatedOrders);
     };
 
@@ -236,7 +237,7 @@ function OrdersAdmin () {
                         )}
 
                         <Typography variant="body2" sx={{ mt: 2 }}>
-                            Consultation Charge: ₹{commonCharge.consultationCharge}
+                            Consultation Charge: ₹{order.followUpOrderId ? commonCharge.reconsultationCharge : commonCharge.consultationCharge}
                         </Typography>
                         <Typography variant="body2" sx={{ mt: 2 }}>
                             Delivery Charge: ₹{deliveryCharge(order)}
@@ -458,6 +459,11 @@ function OrdersAdmin () {
                                         <Typography variant="body2" color="textSecondary">
                                             Order ID: {order.orderId}
                                         </Typography>
+                                        {order.followUpOrderId &&
+                                            <Typography variant="caption" color="textSecondary">
+                                                Follow up of: {order.followUpOrderId}
+                                            </Typography>
+                                        }
                                         <Typography variant="body2" gutterBottom>
                                             Placed on: {new Date(order.createDate).toLocaleDateString()}
                                         </Typography>

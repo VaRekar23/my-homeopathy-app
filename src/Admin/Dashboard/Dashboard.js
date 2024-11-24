@@ -136,66 +136,7 @@ function Dashboard({userDetails}) {
     } else {
         return (
             <>
-            <Box sx={{display:'flex', flexDirection: 'column', alignItems:'left', padding:2, border: '1px solid', borderColor: theme.palette.custom.blue, borderRadius: '8px', gap:2}}>
-                <FormGroup>
-                    <FormControlLabel control={
-                        <Switch checked={commonCharge.isDiscount} inputProps={{ 'aria-label': 'controlled' }} onChange={handleIsDiscountChange}/>
-                        }
-                        label='Discount' />
-                </FormGroup>
-                {commonCharge.isDiscount && (
-                    <Grid container spacing={2}>
-                        <Grid item xs={6}>
-                            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                <DemoContainer components={['DatePicker']}>
-                                    <DatePicker label='Discount till Date' value={commonCharge.discountTillDate} onChange={handleDiscountDateChange} />
-                                </DemoContainer>
-                            </LocalizationProvider>
-                        </Grid>
-                        <Grid item xs={6}>
-                            <TextField label='Discount %' name='discountPercentage' value={commonCharge.discountPercentage} 
-                                        onChange={handleCommonChargeChange} fullWidth margin='dense' />
-                        </Grid>
-                    </Grid>
-                )}
-                <Divider style={{ margin: '10px 0' }} />
-
-                <Grid container spacing={2}>
-                    <Grid item xs={6}>
-                        <TextField label='Consultation Charge' name='consultationCharge' value={commonCharge.consultationCharge} 
-                                    type='number' onChange={handleCommonChargeChange} fullWidth margin='normal' />
-                    </Grid>
-                    <Grid item xs={6}>
-                        <TextField label='ReConsultation Charge' name='reconsultationCharge' value={commonCharge.reconsultationCharge} 
-                                    type='number' onChange={handleCommonChargeChange} fullWidth margin='normal' />
-                    </Grid>
-                </Grid>
-                <Divider style={{ margin: '10px 0' }} />
-
-                {commonCharge.deliveryCharge.map((deliveryChrg, index) => (
-                    <Grid container spacing={2} key={index}>
-                        <Grid item xs={4}>
-                            <TextField label='Postal Code Prefix' name='postalCodePrefix' value={deliveryChrg.postalCodePrefix} 
-                                        type='text' onChange={(e) => handleDeliveryChargeOnChange(index, 'postalCodePrefix', e.target.value)} fullWidth margin='normal' />
-                        </Grid>
-                        <Grid item xs={4}>
-                            <TextField label='Region' name='region' value={deliveryChrg.region} 
-                                        type='text' onChange={(e) => handleDeliveryChargeOnChange(index, 'region', e.target.value)} fullWidth margin='normal' />
-                        </Grid>
-                        <Grid item xs={4}>
-                            <TextField label='Charges' name='charges' value={deliveryChrg.charges} 
-                                        type='number' onChange={(e) => handleDeliveryChargeOnChange(index, 'charges', e.target.value)} fullWidth margin='normal' />
-                        </Grid>
-                    </Grid>
-                ))}
-                <IconButton color="success" onClick={() => handleDeliveryChargeOnAdd()} >
-                    <AddCircle />
-                </IconButton>
-
-                <Button variant="contained" color="primary" onClick={handleCommonChargeSubmit} sx={{ marginLeft: 'auto' }}>Update</Button>
-            </Box>
-
-            <Box sx={{display:'flex', flexDirection: 'row', alignItems:'center', padding:2, border: '1px solid', borderColor: theme.palette.custom.blue, borderRadius: '8px', gap:2, marginTop: '10px'}}>
+            <Box sx={{display:'flex', flexDirection: 'row', alignItems:'center', padding:2, border: '1px solid', borderColor: theme.palette.custom.blue, borderRadius: '8px', gap:2}}>
                 <Grid container direction='row' spacing={2} sx={{padding:2}}>
                     <Grid container spacing={2}>
                         <Grid item xs={6}>
@@ -256,6 +197,65 @@ function Dashboard({userDetails}) {
                         </Grid>
                     </Grid>
                 </Grid>
+            </Box>
+
+            <Box sx={{display:'flex', flexDirection: 'column', alignItems:'left', padding:2, border: '1px solid', borderColor: theme.palette.custom.blue, borderRadius: '8px', gap:2, marginTop: '10px'}}>
+                <FormGroup>
+                    <FormControlLabel control={
+                        <Switch checked={commonCharge.isDiscount} inputProps={{ 'aria-label': 'controlled' }} onChange={handleIsDiscountChange}/>
+                        }
+                        label='Discount' />
+                </FormGroup>
+                {commonCharge.isDiscount && (
+                    <Grid container spacing={2}>
+                        <Grid item xs={6}>
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                <DemoContainer components={['DatePicker']}>
+                                    <DatePicker label='Discount till Date' value={commonCharge.discountTillDate} onChange={handleDiscountDateChange} />
+                                </DemoContainer>
+                            </LocalizationProvider>
+                        </Grid>
+                        <Grid item xs={6}>
+                            <TextField label='Discount %' name='discountPercentage' value={commonCharge.discountPercentage} 
+                                        onChange={handleCommonChargeChange} fullWidth margin='dense' />
+                        </Grid>
+                    </Grid>
+                )}
+                <Divider style={{ margin: '10px 0' }} />
+
+                <Grid container spacing={2}>
+                    <Grid item xs={6}>
+                        <TextField label='Consultation Charge' name='consultationCharge' value={commonCharge.consultationCharge} 
+                                    type='number' onChange={handleCommonChargeChange} fullWidth margin='normal' />
+                    </Grid>
+                    <Grid item xs={6}>
+                        <TextField label='ReConsultation Charge' name='reconsultationCharge' value={commonCharge.reconsultationCharge} 
+                                    type='number' onChange={handleCommonChargeChange} fullWidth margin='normal' />
+                    </Grid>
+                </Grid>
+                <Divider style={{ margin: '10px 0' }} />
+
+                {commonCharge.deliveryCharge.map((deliveryChrg, index) => (
+                    <Grid container spacing={2} key={index}>
+                        <Grid item xs={4}>
+                            <TextField label='Postal Code Prefix' name='postalCodePrefix' value={deliveryChrg.postalCodePrefix} 
+                                        type='text' onChange={(e) => handleDeliveryChargeOnChange(index, 'postalCodePrefix', e.target.value)} fullWidth margin='normal' />
+                        </Grid>
+                        <Grid item xs={4}>
+                            <TextField label='Region' name='region' value={deliveryChrg.region} 
+                                        type='text' onChange={(e) => handleDeliveryChargeOnChange(index, 'region', e.target.value)} fullWidth margin='normal' />
+                        </Grid>
+                        <Grid item xs={4}>
+                            <TextField label='Charges' name='charges' value={deliveryChrg.charges} 
+                                        type='number' onChange={(e) => handleDeliveryChargeOnChange(index, 'charges', e.target.value)} fullWidth margin='normal' />
+                        </Grid>
+                    </Grid>
+                ))}
+                <IconButton color="success" onClick={() => handleDeliveryChargeOnAdd()} >
+                    <AddCircle />
+                </IconButton>
+
+                <Button variant="contained" color="primary" onClick={handleCommonChargeSubmit} sx={{ marginLeft: 'auto' }}>Update</Button>
             </Box>
 
             {userData && (
