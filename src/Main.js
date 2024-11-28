@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Header from "./Header/Header";
 import { Box, Container, Toolbar, useTheme } from "@mui/material";
 import Footer from "./Header/Footer";
-import Consultation from "./User/Consultation/Consultation";
+import ConsultationWrapper from './User/Consultation/ConsultationWrapper';
 import About from "./User/About/About";
 import Orders from "./User/Orders/Orders";
 import HomeAdmin from "./Admin/Home/HomeAdmin";
@@ -42,7 +42,7 @@ function Main({uiDetails, isAdmin, setIsAdmin}) {
           case 'Home':
             return <Home uiDetails={uiDetails.home} setActiveComponent={setActiveComponent} setConsultationData={setConsultationData} />;
           case 'Consultation':
-            return <Consultation consultationData={consultationData}/>;
+            return <ConsultationWrapper consultationData={consultationData} />;
           case 'About':
             return <About uiDetails={uiDetails.about} />;
           case 'My Orders':

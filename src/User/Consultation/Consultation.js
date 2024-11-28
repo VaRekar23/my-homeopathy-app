@@ -3,14 +3,13 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import { fetchData, fetchUserData, storeData } from '../../Helper/ApiHelper';
 import { decryptData } from '../../Helper/Secure';
-import { Alert, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, FormControl, Grid, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
+import { Alert, Button, Card, CardContent, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, FormControl, FormControlLabel, FormGroup, Grid, InputLabel, MenuItem, Select, TextField, Typography, useTheme } from '@mui/material';
 
-
-function Consultation ({consultationData})  {
+function Consultation ({consultationData, initialTreatmentDetails, initialQuestionDetails, initialUserData})  {
     const [formData, setFormData] = useState({
-        treatmentId: consultationData.treatmentId,
-        subTreatmentId: consultationData.subTreatmentId,
-        userId: '',
+        treatmentId: consultationData.treatmentId || '',
+        subTreatmentId: consultationData.subTreatmentId || '',
+        userId: initialUserData?.userId || '',
         additionalInfo: '',
         questions: [],
         followUpOrderId: null
@@ -21,45 +20,24 @@ function Consultation ({consultationData})  {
     const [isDataSaved, setIsDataSaved] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
     const [childUsers, setChildUsers] = useState([]);
-    const [userData, setUserData] = useState(null);
-    const [treatmentDetails, setTreatmentDetails] = useState([]);
-    const [questionDetails, setQuestionDetails] = useState([]);
+    const [userData, setUserData] = useState(initialUserData);
+    const [treatmentDetails, setTreatmentDetails] = useState(initialTreatmentDetails);
+    const [questionDetails, setQuestionDetails] = useState(initialQuestionDetails);
     const [selectedOptions, setSelectedOptions] = useState({});
     const [visibleQuestions, setVisibleQuestions] = useState([]);
     const [status, setStatus] = useState('');
     const [orderDetails, setOrderDetails] = useState([]);
     const [existingOrder, setExistingOrder] = useState(null);
-    const [showFollowUpDialog, setShowFollowUpDialog] = useState(false);
+    const [showFollowUp, setShowFollowUp] = useState(false);
+    const [showRecentOrder, setShowRecentOrder] = useState(false);
+    const theme = useTheme();
+    const [isFollowUp, setIsFollowUp] = useState(false);
 
     useEffect(() => {
-        const getTreatmentDetails = async () => {
-            try {
-                const treatments = await fetchData('get-treatments');
-                setTreatmentDetails(treatments);
-                const questions = await fetchData('get-questions');
-                setQuestionDetails(questions);
-
-                if (formData.subTreatmentId !== '') {
-                    setFormData({...formData, 'questions': []});
-                    setVisibleQuestions([treatments[formData.treatmentId].subCategoryList.find(subTreat => subTreat.id===formData.subTreatmentId).questionId]);
-                    if (treatments[formData.treatmentId].subCategoryList.find(subTreat => subTreat.id===formData.subTreatmentId).questionId !== '') {
-                        setIsVisible(false);
-                    } else {
-                        setIsVisible(true);
-                    }
-                }
-            } catch(error) {
-                console.error('Error fetching documents', error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        
-        getTreatmentDetails();
-        if (sessionStorage.getItem('user')!==null) {
+        if (!initialUserData && sessionStorage.getItem('user') !== null) {
             setUserData(decryptData(sessionStorage.getItem('user')));
         }
-    }, []);
+    }, [initialUserData]);
 
     useEffect(() => {
         if (status !== '') {
@@ -98,47 +76,86 @@ function Consultation ({consultationData})  {
         }
     }, [userData]);
 
-    const handleInputChange = (event) => {
-        const { name, value } = event.target;
+    useEffect(() => {
+        if (formData.userId && formData.treatmentId && formData.subTreatmentId && treatmentDetails.length > 0) {
+            try {
+                const selectedTreatment = treatmentDetails[formData.treatmentId];
+                const selectedSubTreatment = selectedTreatment.subCategoryList.find(
+                    subTreat => subTreat.id === formData.subTreatmentId
+                );
 
-        if (name === 'subTreatmentId') {
-            setFormData({...formData, 'questions': []});
-            setVisibleQuestions([treatmentDetails[formData.treatmentId].subCategoryList.find(subTreat => subTreat.id===value).questionId]);
-            if (treatmentDetails[formData.treatmentId].subCategoryList.find(subTreat => subTreat.id===value).questionId !== '') {
-                setIsVisible(false);
-            } else {
-                setIsVisible(true);
-            }
+                // Check for existing orders with same treatment details
+                if (orderDetails && Object.keys(orderDetails).length > 0) {
+                    const pendingStatuses = ['PDR', 'PP', 'PD', 'MC'];
+                    const completedStatuses = ['FP', 'C'];
 
-            const filteredOrder = Object.entries(orderDetails)
-                                .filter(([key, val]) => {
-                                    const match = val.userId === formData.userId &&
-                                                val.treatmentId === formData.treatmentId &&
-                                                val.subTreatmentId === value &&
-                                                (val.status==='FP' || val.status==='C');
-                                    return match;
-                                })
-                                .sort(([keyA, valA], [keyB, valB]) => {
-                                    // Sort by createDate.seconds in descending order
-                                    return valB.createDate.seconds - valA.createDate.seconds;
-                                })
-                                .reduce((acc, [key, value]) => {
-                                    acc[key] = value;
-                                    return acc;
-                                }, {});
-            const latestOrder = Object.entries(filteredOrder)[0]?.[1] || null;
-            if (latestOrder) {
-                setExistingOrder(latestOrder);
-                setShowFollowUpDialog(true);
-            } else {
-                setExistingOrder(null);
-                setShowFollowUpDialog(false);
+                    // Find pending orders
+                    const pendingOrder = Object.values(orderDetails).find(order => 
+                        order.treatmentId === formData.treatmentId &&
+                        order.subTreatmentId === formData.subTreatmentId &&
+                        order.userId === formData.userId &&
+                        pendingStatuses.includes(order.status)
+                    );
+                    if (pendingOrder) {
+                        setShowRecentOrder(true);
+                        setExistingOrder(pendingOrder);
+                        setIsVisible(false); // Hide the form
+                        return;
+                    } else {
+                        setShowRecentOrder(false);
+                    }
+
+                    // Find completed orders for follow-up
+                    const completedOrders = Object.values(orderDetails).filter(order => 
+                        order.treatmentId === formData.treatmentId &&
+                        order.subTreatmentId === formData.subTreatmentId &&
+                        order.userId === formData.userId &&
+                        completedStatuses.includes(order.status)
+                    );
+
+                    if (completedOrders.length > 0) {
+                        const latestOrder = completedOrders.sort((a, b) => 
+                            (b.createDate.seconds + b.createDate.nanos/1e9) - 
+                            (a.createDate.seconds + a.createDate.nanos/1e9)
+                        )[0];
+
+                        setExistingOrder(latestOrder);
+                        setShowFollowUp(true);
+                    } else {
+                        setExistingOrder(null);
+                        setShowFollowUp(false);
+                    }
+                }
+
+                if (selectedSubTreatment) {
+                    setFormData(prev => ({...prev, questions: []}));
+                    setVisibleQuestions([selectedSubTreatment.questionId]);
+                    setIsVisible(!selectedSubTreatment.questionId);
+                }
+            } catch (error) {
+                console.error('Error processing treatment details:', error);
             }
         }
-        setFormData({
-            ...formData,
+    }, [formData.userId, formData.treatmentId, formData.subTreatmentId, treatmentDetails, orderDetails]);
+
+    const handleInputChange = (event) => {
+        const { name, value } = event.target;
+        
+        setFormData(prev => ({
+            ...prev,
             [name]: value,
-        });
+            // Reset questions and related fields when treatment or subTreatment changes
+            ...(name === 'treatmentId' || name === 'subTreatmentId' ? {
+                questions: [],
+            } : {})
+        }));
+
+        // Reset selected options when treatment changes
+        if (name === 'treatmentId' || name === 'subTreatmentId') {
+            setSelectedOptions({});
+            setVisibleQuestions([]);
+            setIsVisible(false);
+        }
     };
 
     const handleOptionChange = (questionID, questionName, optionValue, childQuestionID) => {
@@ -196,19 +213,43 @@ function Consultation ({consultationData})  {
         );
     };
 
+    const handleFollowUpCheck = (event) => {
+        setIsFollowUp(event.target.checked);
+
+        if (event.target.checked) {
+            setFormData({ ...formData, followUpOrderId: existingOrder.orderId });
+        } else {
+            setFormData({ ...formData, followUpOrderId: null });
+        }
+    }
+
     const handleFollowUpConfirm = () => {
         setFormData({ ...formData, followUpOrderId: existingOrder.orderId });
-        setShowFollowUpDialog(false);
+        setShowFollowUp(false);
     };
     
     const handleFollowUpCancel = () => {
         setFormData({ ...formData, followUpOrderId: null });
-        setShowFollowUpDialog(false);
+        setShowFollowUp(false);
     };
 
     const handleSubmit = () => {
         const response = storeData('store-order', formData);
         setStatus(response);
+    };
+
+    // Add this helper function to get status text
+    const getStatusText = (status) => {
+        const statusMap = {
+            'PP': 'Payment Pending',
+            'PD': 'Payment Done',
+            'PDR': 'Pending Doctor Review',
+            'MC': 'Medicine Courier',
+            'FP': 'Feedback Pending',
+            'C': 'Completed',
+            'D': 'Delete'
+        };
+        return statusMap[status] || status;
     };
 
     if (isLoading) {
@@ -295,6 +336,66 @@ function Consultation ({consultationData})  {
                     </Grid>
 
                     <Divider sx={{ width: '100%', marginY: 2 }} />
+                    {showRecentOrder && existingOrder && (
+                        <Card sx={{ 
+                            width: '100%',
+                            border: '2px solid',
+                            borderColor: theme.palette.custom.blue,
+                            borderRadius: '8px',
+                            background: theme.palette.custom.background,
+                            mb: 2
+                        }}>
+                            <CardContent>
+                                <Typography variant="h6" color="primary" gutterBottom>
+                                    Pending Order Found
+                                </Typography>
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12} md={6}>
+                                        <Typography variant="body1">
+                                            <strong>Order ID:</strong> {existingOrder.orderId}
+                                        </Typography>
+                                        <Typography variant="body1">
+                                            <strong>Status:</strong> {getStatusText(existingOrder.status)}
+                                        </Typography>
+                                        <Typography variant="body1">
+                                            <strong>Created On:</strong> {new Date(existingOrder.createDate.seconds * 1000).toLocaleDateString()} 
+                                            {' at '} 
+                                            {new Date(existingOrder.createDate.seconds * 1000).toLocaleTimeString()}
+                                        </Typography>
+                                    </Grid>
+                                </Grid>
+                                <Box sx={{ mt: 2 }}>
+                                    <Typography variant="body2" color="warning.dark">
+                                        Please check the status of this order in the 'My Orders' section before creating a new one.
+                                    </Typography>
+                                </Box>
+                            </CardContent>
+                        </Card>
+                    )}
+                    {showFollowUp && existingOrder && (
+                        <Card sx={{ width: 'fit-content', 
+                                marginLeft: 0,
+                                border: '2px solid',
+                                borderColor: theme.palette.custom.blue, 
+                                borderRadius: '8px',
+                                background: theme.palette.custom.background}}>
+                            <CardContent>
+                                <FormGroup>
+                                    <FormControlLabel control={
+                                        <Checkbox checked={isFollowUp} onChange={handleFollowUpCheck} inputProps={{ 'aria-label': 'controlled' }}/>}
+                                                    label='You have a recent order for same treatment. Are you following up for below order?' />
+                                </FormGroup>
+                                <Typography variant='subtitle1'>{existingOrder?.orderId}</Typography>
+                                <Typography variant='subtitle1'>
+                                    {existingOrder?.createDate &&
+                                        new Date(existingOrder.createDate.seconds * 1000).toLocaleDateString()} 
+                                    {' at '} 
+                                    {existingOrder?.createDate &&
+                                        new Date(existingOrder.createDate.seconds * 1000).toLocaleTimeString()}
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                    )}
 
                     {visibleQuestions.map((questionID) => renderQuestion(questionID))}
 
@@ -318,26 +419,7 @@ function Consultation ({consultationData})  {
                     )}
                     
                 </Box>
-                <Dialog open={showFollowUpDialog} onClose={handleFollowUpCancel}>
-                    <DialogTitle>Follow Up Confirmation</DialogTitle>
-                    <DialogContent>
-                        <DialogContentText>
-                        You have a recent order for same treatment.
-                        Are you following up for same order with ID{' '}
-                        {existingOrder?.orderId} created on{' '}
-                        {existingOrder?.createDate &&
-                            new Date(existingOrder.createDate.seconds * 1000).toLocaleDateString()}{' '}
-                        at{' '}
-                        {existingOrder?.createDate &&
-                            new Date(existingOrder.createDate.seconds * 1000).toLocaleTimeString()}
-                        ?
-                        </DialogContentText>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleFollowUpCancel}>No</Button>
-                        <Button onClick={handleFollowUpConfirm} color="primary">Yes</Button>
-                    </DialogActions>
-                </Dialog>
+                
             </>
         );
     }
