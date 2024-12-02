@@ -4,6 +4,13 @@ import { fetchUserData, storeData, fetchData } from '../../Helper/ApiHelper';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Card, CardContent, CircularProgress, Divider, Grid, List, ListItem, Paper, Rating, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography, useTheme } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import dayjs from 'dayjs';
+import ImageList from '@mui/material/ImageList';
+import ImageListItem from '@mui/material/ImageListItem';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
+import ZoomInIcon from '@mui/icons-material/ZoomIn';
 
 function OrdersAdmin () {
     const [orderDetails, setOrderDetails] = useState([]);
@@ -13,6 +20,9 @@ function OrdersAdmin () {
     const [status, setStatus] = useState('');
     const [filterText, setFilterText] = useState('');
     const theme = useTheme();
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [openImageDialog, setOpenImageDialog] = useState(false);
+    const [loadingImages, setLoadingImages] = useState({});
 
     const getAge = (dob) => {
         const today = dayjs();
@@ -419,6 +429,16 @@ function OrdersAdmin () {
         )
     }
 
+    const handleImageClick = (imageUrl) => {
+        setSelectedImage(imageUrl);
+        setOpenImageDialog(true);
+    };
+
+    const handleCloseImage = () => {
+        setSelectedImage(null);
+        setOpenImageDialog(false);
+    };
+
     if (isLoading) {
         return (
           <>
@@ -525,6 +545,40 @@ function OrdersAdmin () {
                                                 </CardContent>
                                             </Card>
 
+                                            {order.images && order.images.length > 0 && (
+                                                <Accordion sx={{marginTop:'10px'}}>
+                                                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                                        <Typography variant="subtitle1">Medical Images ({order.images.length})</Typography>
+                                                    </AccordionSummary>
+                                                    <AccordionDetails>
+                                                        <ImageList 
+                                                            sx={{ 
+                                                                width: '100%', 
+                                                                maxHeight: 300,
+                                                                '&::-webkit-scrollbar': {
+                                                                    width: '8px',
+                                                                },
+                                                                '&::-webkit-scrollbar-track': {
+                                                                    background: '#f1f1f1',
+                                                                },
+                                                                '&::-webkit-scrollbar-thumb': {
+                                                                    background: '#888',
+                                                                    borderRadius: '4px',
+                                                                },
+                                                            }} 
+                                                            cols={3} 
+                                                            rowHeight={164}
+                                                        >
+                                                            {order.images.map((image, imgIndex) => (
+                                                                <ImageListItem key={imgIndex}>
+                                                                    <img src={image} alt={`Image ${imgIndex + 1}`} onClick={() => handleImageClick(image)} />
+                                                                </ImageListItem>
+                                                            ))}
+                                                        </ImageList>
+                                                    </AccordionDetails>
+                                                </Accordion>
+                                            )}
+
                                             {renderStatusSpecificUI(order.status, order, index)}
                                         </Grid>
                                     </AccordionDetails>
@@ -534,6 +588,17 @@ function OrdersAdmin () {
                         </Paper>
                     ))}
                 </List>
+                <Dialog open={openImageDialog} onClose={handleCloseImage}>
+                    <DialogContent>
+                        <IconButton onClick={handleCloseImage} sx={{ position: 'absolute', top: 8, right: 8 }}>
+                            <CloseIcon />
+                        </IconButton>
+                        <img src={selectedImage} alt="Selected" style={{ width: '100%', maxHeight: '80vh' }} />
+                        <IconButton onClick={() => window.open(selectedImage, '_blank')} sx={{ position: 'absolute', bottom: 8, right: 8 }}>
+                            <ZoomInIcon />
+                        </IconButton>
+                    </DialogContent>
+                </Dialog>
             </Box>
         );
     }

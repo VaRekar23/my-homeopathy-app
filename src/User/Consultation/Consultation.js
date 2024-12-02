@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
-import { fetchData, fetchUserData, storeData } from '../../Helper/ApiHelper';
+import { fetchData, fetchUserData, maskImage, storeData, uploadImage } from '../../Helper/ApiHelper';
 import { decryptData } from '../../Helper/Secure';
-import { Alert, Button, Card, CardContent, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, FormControl, FormControlLabel, FormGroup, Grid, InputLabel, MenuItem, Select, TextField, Typography, useTheme } from '@mui/material';
+import { Alert, Button, Card, CardActions, CardContent, CardMedia, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, FormControl, FormControlLabel, FormGroup, Grid, IconButton, InputLabel, MenuItem, Select, TextField, Typography, useTheme } from '@mui/material';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 function Consultation ({consultationData, initialTreatmentDetails, initialQuestionDetails, initialUserData})  {
     const [formData, setFormData] = useState({
@@ -12,7 +14,10 @@ function Consultation ({consultationData, initialTreatmentDetails, initialQuesti
         userId: initialUserData?.userId || '',
         additionalInfo: '',
         questions: [],
-        followUpOrderId: null
+        followUpOrderId: null,
+        images: [],
+        maskImages: false,
+        storeImagesConsent: false,
     });
 
     const [isLoading, setIsLoading] = useState(true);
@@ -32,6 +37,15 @@ function Consultation ({consultationData, initialTreatmentDetails, initialQuesti
     const [showRecentOrder, setShowRecentOrder] = useState(false);
     const theme = useTheme();
     const [isFollowUp, setIsFollowUp] = useState(false);
+    const [selectedImages, setSelectedImages] = useState([]);
+    const [maskedImages, setMaskedImages] = useState([]);
+    const [imageProcessingInfo, setImageProcessingInfo] = useState([]);
+    const [imageConsent, setImageConsent] = useState(false);
+    const [maskFace, setMaskFace] = useState(false);
+    const [imageError, setImageError] = useState('');
+    const [openConsentDialog, setOpenConsentDialog] = useState(false);
+    const [isMasking, setIsMasking] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         if (!initialUserData && sessionStorage.getItem('user') !== null) {
@@ -223,19 +237,102 @@ function Consultation ({consultationData, initialTreatmentDetails, initialQuesti
         }
     }
 
-    const handleFollowUpConfirm = () => {
-        setFormData({ ...formData, followUpOrderId: existingOrder.orderId });
-        setShowFollowUp(false);
-    };
-    
-    const handleFollowUpCancel = () => {
-        setFormData({ ...formData, followUpOrderId: null });
-        setShowFollowUp(false);
+    const handleSubmit = async () => {
+        // Check if images are uploaded but consent is not given
+        if (selectedImages.length > 0 && !imageConsent) {
+            setOpenConsentDialog(true);
+            return;
+        }
+        
+        setIsSubmitting(true); // Start loading
+        try {
+            let updatedFormData = { ...formData };
+            
+            // If there are images and consent is given, upload them first
+            if (selectedImages.length > 0 && formData.storeImagesConsent) {
+                const imageUrls = await uploadImages();
+                
+                // Update formData with image URLs
+                updatedFormData = {
+                    ...updatedFormData,
+                    images: imageUrls
+                };
+            }
+            
+            // Proceed with form submission using the updated formData
+            await submitForm(updatedFormData);
+        } catch (error) {
+            console.error('Error during submission:', error);
+            // Handle error appropriately
+        } finally {
+            setIsSubmitting(false); // Stop loading
+        }
     };
 
-    const handleSubmit = () => {
-        const response = storeData('store-order', formData);
-        setStatus(response);
+    // Add new function to handle image uploads
+    const uploadImages = async () => {
+        try {
+            const uploadPromises = selectedImages.map(async (image) => {
+                const formData = new FormData();
+                
+                // If masking is enabled and eyes were detected, use the masked image
+                if (formData.maskImages && imageProcessingInfo.length > 0) {
+                    const processedImage = imageProcessingInfo.find(
+                        info => info.originalFileName === image.file.name
+                    );
+                    
+                    if (processedImage && processedImage.eyesDetected) {
+                        // Convert base64 to file
+                        const base64Response = await fetch(processedImage.preview);
+                        const blob = await base64Response.blob();
+                        const maskedFile = new File([blob], image.file.name, { type: 'image/jpeg' });
+                        formData.append('file', maskedFile);
+                    } else {
+                        formData.append('file', image.file);
+                    }
+                } else {
+                    formData.append('file', image.file);
+                }
+                
+                // Use ApiHelper's uploadImage method to get Firebase URL
+                const imageUrl = await uploadImage('upload-image', formData);
+                return imageUrl;
+            });
+
+            const uploadedUrls = await Promise.all(uploadPromises);
+            return uploadedUrls;
+        } catch (error) {
+            console.error('Error uploading images:', error);
+            throw error;
+        }
+    };
+
+    // Update submitForm to accept formData as parameter
+    const submitForm = async (dataToSubmit) => {
+        try {
+            const response = await storeData('store-order', dataToSubmit);
+            setStatus(response);
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            throw error;
+        }
+    };
+
+    // Update dialog handler to match new pattern
+    const handleDialogConfirm = async () => {
+        setOpenConsentDialog(false);
+        setIsSubmitting(true);
+        try {
+            await submitForm(formData); // In this case, no images to upload
+        } catch (error) {
+            console.error('Error during submission:', error);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleDialogCancel = () => {
+        setOpenConsentDialog(false);
     };
 
     // Add this helper function to get status text
@@ -251,6 +348,112 @@ function Consultation ({consultationData, initialTreatmentDetails, initialQuesti
         };
         return statusMap[status] || status;
     };
+
+    const handleImageUpload = (event) => {
+        const files = Array.from(event.target.files);
+        
+        if (selectedImages.length + files.length > 3) {
+            setImageError('Maximum 3 images allowed');
+            return;
+        }
+
+        // Reset error
+        setImageError('');
+
+        // Validate file types and sizes
+        const validFiles = files.filter(file => {
+            const isValidType = ['image/jpeg', 'image/png', 'image/jpg'].includes(file.type);
+            const isValidSize = file.size <= 10 * 1024 * 1024; // 10MB limit
+            return isValidType && isValidSize;
+        });
+
+        // Create preview URLs
+        const newImages = validFiles.map(file => ({
+            file: file,
+            preview: URL.createObjectURL(file)
+        }));
+
+        setSelectedImages(prev => [...prev, ...newImages]);
+    };
+
+    const removeImage = (index) => {
+        setSelectedImages(prev => {
+            const newImages = [...prev];
+            URL.revokeObjectURL(newImages[index].preview);
+            newImages.splice(index, 1);
+            return newImages;
+        });
+
+        setImageProcessingInfo(prev => {
+            const newInfo = [...prev];
+            newInfo.splice(index, 1);
+            return newInfo;
+        });
+    };
+
+    const handleConsentChange = (event) => {
+        setImageConsent(event.target.checked);
+        setFormData(prev => ({
+            ...prev,
+            storeImagesConsent: event.target.checked,
+            maskImages: event.target.checked ? maskFace : false
+        }));
+    };
+
+    const handleMaskChange = async (event) => {
+        setMaskFace(event.target.checked);
+        if (imageConsent) {
+            setFormData(prev => ({
+                ...prev,
+                maskImages: event.target.checked,
+            }));
+        }
+
+        if (event.target.checked) {
+            await previewBlurImage();
+        }
+    };
+
+    const previewBlurImage = async () => {
+        setIsMasking(true);
+        try {
+            // Create FormData for each image
+            const promises = selectedImages.map(async (img, index) => {
+                const formData = new FormData();
+                formData.append("file", img.file);
+                
+                // Call API to get masked image response
+                const response = await maskImage('preview-blurred-eyes', formData);
+                
+                return {
+                    file: img.file, // Keep original file
+                    preview: response.processedImage, // Base64 image from API
+                    originalPreview: selectedImages[index].preview,
+                    eyesDetected: response.eyesDetected === 'true',
+                    eyesCount: parseInt(response.eyesCount),
+                    originalFileName: response.originalFileName
+                };
+            });
+
+            // Wait for all images to be processed
+            const processedResults = await Promise.all(promises);
+            setImageProcessingInfo(processedResults);
+        } catch (error) {
+            console.error('Error processing images:', error);
+            // Handle error appropriately
+        } finally {
+            setIsMasking(false);
+        }
+    };
+
+    useEffect(() => {
+        return () => {
+            // Cleanup preview URLs when component unmounts
+            selectedImages.forEach(image => {
+                URL.revokeObjectURL(image.preview);
+            });
+        };
+    }, [selectedImages]);
 
     if (isLoading) {
         return (
@@ -409,17 +612,199 @@ function Consultation ({consultationData, initialTreatmentDetails, initialQuesti
                         onChange={handleInputChange}
                         sx={{ marginTop: 2 }} />
                         
-                        <Button variant='contained'
-                                color='primary'
-                                sx={{ marginTop: 2 }}
-                                onClick={handleSubmit} >
-                            Submit
+                        <Box sx={{ mt: 3, width: '100%' }}>
+                            <Typography variant="subtitle1" gutterBottom>
+                                Upload Images (Optional)
+                            </Typography>
+                            
+                            <input
+                                accept="image/*"
+                                style={{ display: 'none' }}
+                                id="image-upload"
+                                type="file"
+                                multiple
+                                onChange={handleImageUpload}
+                                disabled={selectedImages.length >= 3}
+                            />
+                            
+                            <label htmlFor="image-upload">
+                                <Button
+                                    variant="outlined"
+                                    component="span"
+                                    disabled={selectedImages.length >= 3}
+                                    startIcon={<CloudUploadIcon />}
+                                >
+                                    Select Images
+                                </Button>
+                            </label>
+
+                            {imageError && (
+                                <Typography color="error" variant="caption" display="block">
+                                    {imageError}
+                                </Typography>
+                            )}
+
+                            {/* Image Previews */}
+                            <Grid container spacing={2} sx={{ mt: 2 }}>
+                                {maskFace ? (
+                                    <>
+                                    {imageProcessingInfo.map((image, index) => (
+                                        <Grid item xs={4} key={index}>
+                                            <Card>
+                                                <CardMedia
+                                                    component="img"
+                                                    height="140"
+                                                    image={image.eyesDetected ? image.preview : image.originalPreview}
+                                                    alt={`Preview ${index + 1}`}
+                                                    sx={{ objectFit: 'cover' }}
+                                                />
+                                                <CardContent sx={{ py: 1 }}>
+                                                    {image.eyesDetected ? (
+                                                        <Typography variant="caption" color="success.main">
+                                                            Eyes detected and masked
+                                                        </Typography>
+                                                    ) : (
+                                                        <Typography variant="caption" color="info.main">
+                                                            No eyes detected
+                                                        </Typography>
+                                                    )}
+                                                </CardContent>
+                                                <CardActions sx={{ justifyContent: 'center' }}>
+                                                    <IconButton 
+                                                        size="small" 
+                                                        color="error"
+                                                        onClick={() => removeImage(index)}
+                                                    >
+                                                        <DeleteIcon />
+                                                    </IconButton>
+                                                </CardActions>
+                                            </Card>
+                                        </Grid>
+                                    ))}
+                                    </>
+                                ) : (
+                                    <>
+                                    {selectedImages.map((image, index) => (
+                                        <Grid item xs={4} key={index}>
+                                            <Card>
+                                                <CardMedia
+                                                    component="img"
+                                                    height="140"
+                                                    image={image.preview}
+                                                    alt={`Preview ${index + 1}`}
+                                                    sx={{ objectFit: 'cover' }}
+                                                />
+                                                <CardActions sx={{ justifyContent: 'center' }}>
+                                                    <IconButton 
+                                                        size="small" 
+                                                        color="error"
+                                                        onClick={() => removeImage(index)}
+                                                    >
+                                                        <DeleteIcon />
+                                                    </IconButton>
+                                                </CardActions>
+                                            </Card>
+                                        </Grid>
+                                    ))}
+                                    </>
+                                )}
+                            </Grid>
+
+                            {/* Consent and Face Masking Options */}
+                            {selectedImages.length > 0 && (
+                                <Box sx={{ mt: 2 }}>
+                                    <FormGroup>
+                                        <FormControlLabel
+                                            control={
+                                                <Checkbox
+                                                    checked={imageConsent}
+                                                    onChange={handleConsentChange}
+                                                />
+                                            }
+                                            label="I consent to share these images with the doctor for review"
+                                        />
+                                        {/* <FormControlLabel
+                                            control={
+                                                <Checkbox
+                                                    checked={maskFace}
+                                                    onChange={handleMaskChange}
+                                                    disabled={!imageConsent}
+                                                />
+                                            }
+                                            label="Mask/blur eyes in images containing face"
+                                        /> */}
+                                    </FormGroup>
+                                </Box>
+                            )}
+                        </Box>
+
+                        <Button 
+                            variant='contained'
+                            color='primary'
+                            sx={{ marginTop: 2 }}
+                            onClick={handleSubmit}
+                            disabled={isSubmitting || (selectedImages.length > 0 && !imageConsent)}
+                        >
+                            {isSubmitting ? (
+                                <>
+                                    <CircularProgress 
+                                        size={24} 
+                                        color="inherit" 
+                                        sx={{ marginRight: 1 }}
+                                    />
+                                    Submitting...
+                                </>
+                            ) : (
+                                'Submit'
+                            )}
                         </Button>
                         </>
                     )}
                     
                 </Box>
                 
+                {/* Consent Confirmation Dialog */}
+                <Dialog
+                    open={openConsentDialog}
+                    onClose={handleDialogCancel}
+                    aria-labelledby="consent-dialog-title"
+                    aria-describedby="consent-dialog-description"
+                >
+                    <DialogTitle id="consent-dialog-title" sx={{ color: theme.palette.primary.main }}>
+                        Images Not Included
+                    </DialogTitle>
+                    <DialogContent>
+                        <DialogContentText id="consent-dialog-description">
+                            You have uploaded {selectedImages.length} image{selectedImages.length > 1 ? 's' : ''} but haven't provided consent to share them. 
+                            These images will not be included in your consultation.
+                            <br /><br />
+                            Are you sure you want to proceed without including the images?
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions sx={{ padding: 2 }}>
+                        <Button 
+                            onClick={handleDialogCancel} 
+                            variant="outlined"
+                            color="primary"
+                        >
+                            Go Back
+                        </Button>
+                        <Button 
+                            onClick={handleDialogConfirm} 
+                            variant="contained"
+                            color='primary'
+                            autoFocus
+                        >
+                            Proceed Without Images
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+
+                {isMasking && (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', mt: 2 }}>
+                        <CircularProgress size={24} />
+                    </Box>
+                )}
             </>
         );
     }

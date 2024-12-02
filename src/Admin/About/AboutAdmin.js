@@ -83,7 +83,7 @@ function AboutAdmin({uiDetails}) {
         const formData = new FormData();
         formData.append("file", imageFile);
 
-        const fileUploadResponse = uploadImage(formData);
+        const fileUploadResponse = uploadImage('upload-image', formData);
         const fileURL = await fileUploadResponse;
 
         const payload = {

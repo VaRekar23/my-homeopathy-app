@@ -6,6 +6,13 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
+import ImageList from '@mui/material/ImageList';
+import ImageListItem from '@mui/material/ImageListItem';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
+import ZoomInIcon from '@mui/icons-material/ZoomIn';
 
 function Orders () {
     const [orderDetails, setOrderDetails] = useState([]);
@@ -14,6 +21,9 @@ function Orders () {
     const navigate = useNavigate();
     const theme = useTheme();
     const [filterText, setFilterText] = useState('');
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [openImageDialog, setOpenImageDialog] = useState(false);
+    const [loadingImages, setLoadingImages] = useState({});
 
     useEffect(() => {
         const getOrderDetails = async (userId) => {
@@ -261,6 +271,16 @@ function Orders () {
         )
     }
 
+    const handleImageClick = (imageUrl) => {
+        setSelectedImage(imageUrl);
+        setOpenImageDialog(true);
+    };
+
+    const handleCloseImage = () => {
+        setSelectedImage(null);
+        setOpenImageDialog(false);
+    };
+
     if (isLoading) {
         return (
           <>
@@ -345,6 +365,97 @@ function Orders () {
                                                     </AccordionDetails>
                                                 </Accordion>
 
+                                                {order.images && order.images.length > 0 && (
+                                                    <Accordion sx={{ marginTop: '10px' }}>
+                                                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                                            <Typography variant="subtitle1">
+                                                                Medical Images ({order.images.length})
+                                                            </Typography>
+                                                        </AccordionSummary>
+                                                        <AccordionDetails>
+                                                            <ImageList 
+                                                                sx={{ 
+                                                                    width: '100%', 
+                                                                    maxHeight: 300,
+                                                                    '&::-webkit-scrollbar': {
+                                                                        width: '8px',
+                                                                    },
+                                                                    '&::-webkit-scrollbar-track': {
+                                                                        background: '#f1f1f1',
+                                                                    },
+                                                                    '&::-webkit-scrollbar-thumb': {
+                                                                        background: '#888',
+                                                                        borderRadius: '4px',
+                                                                    },
+                                                                }} 
+                                                                cols={3} 
+                                                                rowHeight={164}
+                                                            >
+                                                                {order.images.map((image, imgIndex) => (
+                                                                    <ImageListItem 
+                                                                        key={imgIndex}
+                                                                        sx={{ 
+                                                                            cursor: 'pointer',
+                                                                            position: 'relative',
+                                                                            '&:hover .zoom-overlay': {
+                                                                                opacity: 1,
+                                                                            },
+                                                                        }}
+                                                                        onClick={() => handleImageClick(image)}
+                                                                    >
+                                                                        {loadingImages[imgIndex] && (
+                                                                            <Box
+                                                                                sx={{
+                                                                                    position: 'absolute',
+                                                                                    top: 0,
+                                                                                    left: 0,
+                                                                                    right: 0,
+                                                                                    bottom: 0,
+                                                                                    display: 'flex',
+                                                                                    alignItems: 'center',
+                                                                                    justifyContent: 'center',
+                                                                                    background: 'rgba(255, 255, 255, 0.8)',
+                                                                                }}
+                                                                            >
+                                                                                <CircularProgress size={24} />
+                                                                            </Box>
+                                                                        )}
+                                                                        <img
+                                                                            src={image}
+                                                                            alt={`Medical image ${imgIndex + 1}`}
+                                                                            loading="lazy"
+                                                                            onLoadStart={() => setLoadingImages(prev => ({ ...prev, [imgIndex]: true }))}
+                                                                            onLoad={() => setLoadingImages(prev => ({ ...prev, [imgIndex]: false }))}
+                                                                            style={{ 
+                                                                                borderRadius: '4px',
+                                                                                objectFit: 'cover',
+                                                                            }}
+                                                                        />
+                                                                        <Box
+                                                                            className="zoom-overlay"
+                                                                            sx={{
+                                                                                position: 'absolute',
+                                                                                top: 0,
+                                                                                left: 0,
+                                                                                right: 0,
+                                                                                bottom: 0,
+                                                                                display: 'flex',
+                                                                                alignItems: 'center',
+                                                                                justifyContent: 'center',
+                                                                                background: 'rgba(0, 0, 0, 0.5)',
+                                                                                opacity: 0,
+                                                                                transition: 'opacity 0.3s',
+                                                                            }}
+                                                                        >
+                                                                            <ZoomInIcon sx={{ color: 'white', fontSize: 30 }} />
+                                                                        </Box>
+                                                                    </ImageListItem>
+                                                                ))}
+                                                            </ImageList>
+                                                        </AccordionDetails>
+                                                    </Accordion>
+                                                )}
+
                                                 <Typography variant="subtitle1" sx={{marginTop:'10px'}}><b>Additional Info</b></Typography>
                                                 <Card variant='outlined'>
                                                     <CardContent>
@@ -361,6 +472,43 @@ function Orders () {
                         </Paper>
                     ))}
                 </List>
+
+                <Dialog
+                    open={openImageDialog}
+                    onClose={handleCloseImage}
+                    maxWidth="md"
+                    fullWidth
+                >
+                    <DialogContent sx={{ p: 0, position: 'relative' }}>
+                        <IconButton
+                            onClick={handleCloseImage}
+                            sx={{
+                                position: 'absolute',
+                                right: 8,
+                                top: 8,
+                                color: 'white',
+                                background: 'rgba(0, 0, 0, 0.5)',
+                                '&:hover': {
+                                    background: 'rgba(0, 0, 0, 0.7)',
+                                },
+                            }}
+                        >
+                            <CloseIcon />
+                        </IconButton>
+                        {selectedImage && (
+                            <img
+                                src={selectedImage}
+                                alt="Medical image full view"
+                                style={{
+                                    width: '100%',
+                                    height: 'auto',
+                                    maxHeight: '80vh',
+                                    objectFit: 'contain',
+                                }}
+                            />
+                        )}
+                    </DialogContent>
+                </Dialog>
             </Box>
         );
     }

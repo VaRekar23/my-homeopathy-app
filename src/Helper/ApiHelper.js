@@ -94,9 +94,9 @@ export const fetchUserData = async(apiEndpoint, param) => {
     }
 };
 
-export const uploadImage = async(file) => {
+export const uploadImage = async(apiEndpoint, file) => {
     try {
-        const response = await axios.post(api_upload_file,file, {
+        const response = await axios.post(api_upload_file+apiEndpoint,file, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             }
@@ -111,3 +111,18 @@ export const uploadImage = async(file) => {
         throw error;
     }
 }
+
+export const maskImage = async(endpoint, formData) => {
+    try {
+        const response = await axios.post(api_upload_file+endpoint, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            }
+        });
+
+        return response.data;
+    } catch(error) {
+        console.error('Error masking image:', error);
+        throw error;
+    }
+};
