@@ -58,7 +58,6 @@ function Orders () {
         orderToUpdate.paymentId = '1234';
         orderToUpdate.paymentDate = dayjs();
         const response = storeData('update-order', orderToUpdate);
-        console.log('Payment Request for:', orderToUpdate);
     };
 
     const handleFeedback = (orderId) => {
@@ -189,7 +188,16 @@ function Orders () {
 
                             {isPaymentDone ? 
                                 <Typography variant="subtitle1">₹{order.totalAmount}</Typography> :
-                                <Button variant='outlined' color='primary' onClick={() => handlePayment(index)}>Pay ₹{order.totalAmount}</Button>
+                                <Button 
+                                    variant='outlined' 
+                                    color='primary' 
+                                    onClick={(e) => {
+                                        e.stopPropagation(); // Prevent accordion toggle
+                                        handlePayment(index);
+                                    }}
+                                >
+                                    Pay ₹{order.totalAmount}
+                                </Button>
                             }
                         </Box>
                     </AccordionSummary>
