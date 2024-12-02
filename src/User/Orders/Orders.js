@@ -24,22 +24,30 @@ function Orders () {
     const [selectedImage, setSelectedImage] = useState(null);
     const [openImageDialog, setOpenImageDialog] = useState(false);
     const [loadingImages, setLoadingImages] = useState({});
+    const [isUpdating, setIsUpdating] = useState(false);
 
+    const getOrderDetails = async (userId) => {
+        setIsLoading(true);
+        try {
+            const orders = await fetchUserData('get-orders', userId);
+            setOrderDetails(orders);
+            setFilteredOrders(orders);
+        } catch(error) {
+            console.error('Error fetching orders:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
     useEffect(() => {
-        const getOrderDetails = async (userId) => {
-            try {
-                const orders = await fetchUserData('get-orders', userId);
-                setOrderDetails(orders);
-                setFilteredOrders(orders);
-            } catch(error) {
-                console.error('Error fetching documents', error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        
         const user = decryptData(sessionStorage.getItem('user'));
         getOrderDetails(user.userId);
+    }, []);
+
+    useEffect(() => {
+        return () => {
+            setOrderDetails([]);
+            setFilteredOrders([]);
+        };
     }, []);
 
     const handleFilterChange = (event) => {
@@ -52,16 +60,34 @@ function Orders () {
         setFilteredOrders(filtered);
     };
 
-    const handlePayment = (orderId) => {
-        const orderToUpdate = orderDetails[orderId];
-        orderToUpdate.status = 'PD';
-        orderToUpdate.paymentId = '1234';
-        orderToUpdate.paymentDate = dayjs();
-        const response = storeData('update-order', orderToUpdate);
+    const handlePayment = async (orderId) => {
+        setIsUpdating(true);
+        try {
+            const orderToUpdate = {...orderDetails[orderId]};
+            orderToUpdate.status = 'PD';
+            orderToUpdate.paymentId = '1234';
+            orderToUpdate.paymentDate = dayjs();
+            
+            await storeData('update-order', orderToUpdate);
+            
+            const user = decryptData(sessionStorage.getItem('user'));
+            await getOrderDetails(user.userId);
+        } catch (error) {
+            console.error('Error processing payment:', error);
+        } finally {
+            setIsUpdating(false);
+        }
     };
 
-    const handleFeedback = (orderId) => {
-        navigate('/feedback', { state: {orderId}});
+    const handleFeedback = async (orderId) => {
+        setIsUpdating(true);
+        try {
+            navigate('/feedback', { state: {orderId}});
+        } catch (error) {
+            console.error('Error navigating to feedback:', error);
+        } finally {
+            setIsUpdating(false);
+        }
     };
 
     const invoiceSubtotal = (order) => {
@@ -195,8 +221,16 @@ function Orders () {
                                         e.stopPropagation(); // Prevent accordion toggle
                                         handlePayment(index);
                                     }}
+                                    disabled={isUpdating}
                                 >
-                                    Pay ₹{order.totalAmount}
+                                    {isUpdating ? (
+                                        <>
+                                            <CircularProgress size={20} sx={{ mr: 1 }} />
+                                            Processing...
+                                        </>
+                                    ) : (
+                                        `Pay ₹${order.totalAmount}`
+                                    )}
                                 </Button>
                             }
                         </Box>

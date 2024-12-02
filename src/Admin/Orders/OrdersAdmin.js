@@ -61,8 +61,21 @@ function OrdersAdmin () {
         setFilteredOrders(filtered);
     };
 
+    const apiCall = async (request) => {
+        setIsLoading(true);
+        try {
+            const response = await storeData('update-order', request);
+            setStatus(response);
+            await getOrderDetails('');
+        } catch (error) {
+            console.error('Error updating order:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const handleUpdate = async (orderId) => {
-        const orderToUpdate = orderDetails[orderId];
+        const orderToUpdate = {...orderDetails[orderId]};
         if (orderToUpdate.status === 'Pending Doctor Review') {
             orderToUpdate.status = 'PP';
         } else if (orderToUpdate.status === 'Payment Done') {
@@ -71,19 +84,13 @@ function OrdersAdmin () {
         } else if (orderToUpdate.status === 'Medicine Courier') {
             orderToUpdate.status = 'FP';
         }
-        apiCall(orderToUpdate);
+        await apiCall(orderToUpdate);
     };
 
     const handleDelete = async (orderId) => {
-        const orderToDelete = orderDetails[orderId];
+        const orderToDelete = {...orderDetails[orderId]};
         orderToDelete.status = 'D';
-        apiCall(orderToDelete);
-    };
-
-    const apiCall = async (request) => {
-        setIsLoading(true);
-        const response = storeData('update-order', request);
-        setStatus(response);
+        await apiCall(orderToDelete);
     };
 
     useEffect(() => {
