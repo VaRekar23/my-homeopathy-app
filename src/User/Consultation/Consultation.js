@@ -4,21 +4,32 @@ import Box from '@mui/material/Box';
 import { fetchData, fetchUserData, maskImage, storeData, uploadImage } from '../../Helper/ApiHelper';
 import { decryptData } from '../../Helper/Secure';
 import { Alert, Button, Card, CardActions, CardContent, CardMedia, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, FormControl, FormControlLabel, FormGroup, Grid, IconButton, InputLabel, MenuItem, Select, TextField, Typography, useTheme } from '@mui/material';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { useFormHandler } from '../../hooks/useFormHandler';
+import { ImageUploader } from '../../components/shared/ImageUploader';
+import { useSnackbar } from '../../hooks/useSnackbar';
+
 
 function Consultation ({consultationData, initialTreatmentDetails, initialQuestionDetails, initialUserData})  {
-    const [formData, setFormData] = useState({
-        treatmentId: consultationData.treatmentId || '',
-        subTreatmentId: consultationData.subTreatmentId || '',
-        userId: initialUserData?.userId || '',
-        additionalInfo: '',
-        questions: [],
-        followUpOrderId: null,
-        images: [],
-        maskImages: false,
-        storeImagesConsent: false,
-    });
+    const { showSnackbar, SnackbarComponent } = useSnackbar();
+    const { formData, errors, isSubmitting, setIsSubmitting, validateForm, handleChange, setFormData } = useFormHandler(
+        {
+            treatmentId: consultationData.treatmentId || '',
+            subTreatmentId: consultationData.subTreatmentId || '',
+            userId: initialUserData?.userId || '',
+            additionalInfo: '',
+            questions: [],
+            followUpOrderId: null,
+            images: [],
+            maskImages: false,
+            storeImagesConsent: false,
+        },
+        {
+            treatmentId: { required: true },
+            subTreatmentId: { required: true },
+            userId: { required: true }
+        }
+    );
 
     const [isLoading, setIsLoading] = useState(true);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -45,7 +56,6 @@ function Consultation ({consultationData, initialTreatmentDetails, initialQuesti
     const [imageError, setImageError] = useState('');
     const [openConsentDialog, setOpenConsentDialog] = useState(false);
     const [isMasking, setIsMasking] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         if (!initialUserData && sessionStorage.getItem('user') !== null) {
@@ -238,34 +248,31 @@ function Consultation ({consultationData, initialTreatmentDetails, initialQuesti
     }
 
     const handleSubmit = async () => {
-        // Check if images are uploaded but consent is not given
+        if (!validateForm()) {
+            showSnackbar('Please fill all required fields', 'error');
+            return;
+        }
+
         if (selectedImages.length > 0 && !imageConsent) {
             setOpenConsentDialog(true);
             return;
         }
-        
-        setIsSubmitting(true); // Start loading
+
         try {
+            setIsSubmitting(true);
             let updatedFormData = { ...formData };
-            
-            // If there are images and consent is given, upload them first
+
             if (selectedImages.length > 0 && formData.storeImagesConsent) {
                 const imageUrls = await uploadImages();
-                
-                // Update formData with image URLs
-                updatedFormData = {
-                    ...updatedFormData,
-                    images: imageUrls
-                };
+                updatedFormData.images = imageUrls;
             }
-            
-            // Proceed with form submission using the updated formData
+
             await submitForm(updatedFormData);
+            showSnackbar('Form submitted successfully!', 'success');
         } catch (error) {
-            console.error('Error during submission:', error);
-            // Handle error appropriately
+            showSnackbar(error.message || 'An error occurred', 'error');
         } finally {
-            setIsSubmitting(false); // Stop loading
+            setIsSubmitting(false);
         }
     };
 
@@ -349,26 +356,32 @@ function Consultation ({consultationData, initialTreatmentDetails, initialQuesti
         return statusMap[status] || status;
     };
 
-    const handleImageUpload = (event) => {
-        const files = Array.from(event.target.files);
-        
+    const handleImageUpload = (files) => {
         if (selectedImages.length + files.length > 3) {
-            setImageError('Maximum 3 images allowed');
+            showSnackbar('Maximum 3 images allowed', 'error');
             return;
         }
 
-        // Reset error
-        setImageError('');
-
         // Validate file types and sizes
-        const validFiles = files.filter(file => {
+        const invalidFiles = files.filter(file => {
             const isValidType = ['image/jpeg', 'image/png', 'image/jpg'].includes(file.type);
             const isValidSize = file.size <= 10 * 1024 * 1024; // 10MB limit
-            return isValidType && isValidSize;
+            
+            if (!isValidType) {
+                showSnackbar('Only JPG, JPEG and PNG files are allowed', 'error');
+                return true;
+            }
+            if (!isValidSize) {
+                showSnackbar('Image size should be less than 10MB', 'error');
+                return true;
+            }
+            return false;
         });
 
-        // Create preview URLs
-        const newImages = validFiles.map(file => ({
+        if (invalidFiles.length > 0) return;
+
+        // Create preview URLs for valid files
+        const newImages = files.map(file => ({
             file: file,
             preview: URL.createObjectURL(file)
         }));
@@ -380,14 +393,14 @@ function Consultation ({consultationData, initialTreatmentDetails, initialQuesti
         setSelectedImages(prev => {
             const newImages = [...prev];
             URL.revokeObjectURL(newImages[index].preview);
-            newImages.splice(index, 1);
-            return newImages;
+            const updatedImages = newImages.filter((_, i) => i!==index);
+            return updatedImages;
         });
 
         setImageProcessingInfo(prev => {
             const newInfo = [...prev];
-            newInfo.splice(index, 1);
-            return newInfo;
+            const updatedImages = newInfo.filter((_, i) => i!==index);
+            return updatedImages;
         });
     };
 
@@ -617,26 +630,11 @@ function Consultation ({consultationData, initialTreatmentDetails, initialQuesti
                                 Upload Images (Optional)
                             </Typography>
                             
-                            <input
-                                accept="image/*"
-                                style={{ display: 'none' }}
-                                id="image-upload"
-                                type="file"
-                                multiple
-                                onChange={handleImageUpload}
-                                disabled={selectedImages.length >= 3}
+                            <ImageUploader 
+                                onUpload={handleImageUpload}
+                                isUploading={isSubmitting}
+                                maxFiles={3}
                             />
-                            
-                            <label htmlFor="image-upload">
-                                <Button
-                                    variant="outlined"
-                                    component="span"
-                                    disabled={selectedImages.length >= 3}
-                                    startIcon={<CloudUploadIcon />}
-                                >
-                                    Select Images
-                                </Button>
-                            </label>
 
                             {imageError && (
                                 <Typography color="error" variant="caption" display="block">
@@ -694,15 +692,15 @@ function Consultation ({consultationData, initialTreatmentDetails, initialQuesti
                                                     alt={`Preview ${index + 1}`}
                                                     sx={{ objectFit: 'cover' }}
                                                 />
-                                                <CardActions sx={{ justifyContent: 'center' }}>
+                                                <CardContent sx={{ py: 1 }}>
                                                     <IconButton 
                                                         size="small" 
-                                                        color="error"
                                                         onClick={() => removeImage(index)}
+                                                        sx={{ float: 'right' }}
                                                     >
                                                         <DeleteIcon />
                                                     </IconButton>
-                                                </CardActions>
+                                                </CardContent>
                                             </Card>
                                         </Grid>
                                     ))}
@@ -805,6 +803,7 @@ function Consultation ({consultationData, initialTreatmentDetails, initialQuesti
                         <CircularProgress size={24} />
                     </Box>
                 )}
+                <SnackbarComponent />
             </>
         );
     }
