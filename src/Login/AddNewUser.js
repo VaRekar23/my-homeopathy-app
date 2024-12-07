@@ -1,4 +1,4 @@
-import { Grid, TextField, Box, Typography, MenuItem, Button, FormControl, InputLabel, Select, FormGroup, FormControlLabel, Checkbox } from '@mui/material';
+import { Grid, TextField, Box, Typography, MenuItem, Button, FormControl, InputLabel, Select, FormGroup, FormControlLabel, Checkbox, CircularProgress } from '@mui/material';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
@@ -9,7 +9,16 @@ import { storeData } from '../Helper/ApiHelper';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './Login.css';
 
-function AddNewUser({ user_Id, phoneNumber, isParent, parentId, editData, setContentVisible, isEdit}) {
+function AddNewUser({ 
+    user_Id, 
+    phoneNumber, 
+    isParent, 
+    parentId, 
+    editData, 
+    setContentVisible, 
+    onSuccess,
+    isEdit
+}) {
     const location = useLocation();
     const { userId, phone } = location.state || {};
 
@@ -33,6 +42,7 @@ function AddNewUser({ user_Id, phoneNumber, isParent, parentId, editData, setCon
     const [status, setStatus] = useState('');
     const [checked, setChecked] = useState(false);
     const navigate = useNavigate();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         if (!location.state) {
@@ -43,16 +53,16 @@ function AddNewUser({ user_Id, phoneNumber, isParent, parentId, editData, setCon
         
     }, [navigate]);
 
-    useEffect(() => {
-        if (status!=='') {
-            if (location.state !== null) {
-                navigate('/');
-            } else {
-                setContentVisible(false);
-            }
+    // useEffect(() => {
+    //     if (status!=='') {
+    //         if (location.state !== null) {
+    //             navigate('/');
+    //         } else {
+    //             setContentVisible(false);
+    //         }
 
-        }
-    }, [status]);
+    //     }
+    // }, [status]);
 
     const handleOnChange = useCallback((e) => {
         const { name, value } = e.target;
@@ -96,35 +106,51 @@ function AddNewUser({ user_Id, phoneNumber, isParent, parentId, editData, setCon
         }
     }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        var cipherData = null;
-        if (isEdit) {
-            const parentUser = decryptData(sessionStorage.getItem('user'));
-            const updatedUserData = {
-                ...userData,
-                lastUpdateDate: dayjs(),
-                updatedBy: parentUser.name
+        setIsSubmitting(true);
+        try {
+            var cipherData = null;
+            if (isEdit) {
+                const parentUser = decryptData(sessionStorage.getItem('user'));
+                const updatedUserData = {
+                    ...userData,
+                    lastUpdateDate: dayjs(),
+                    updatedBy: parentUser.name
+                };
+                cipherData = encryptData(updatedUserData);
+            } else {
+                cipherData = encryptData(userData);
+            }
+
+            const request = {
+                userId: userId ? userId : user_Id,
+                isAdmin: false,
+                isParent: isParent,
+                encryptedData: cipherData,
+                parentId: isParent ? '' : parentId
             };
-            console.log('Updated User', updatedUserData);
-            cipherData = encryptData(updatedUserData);
-        } else {
-            cipherData = encryptData(userData);
-        }
 
-        const request = {
-            userId: userId ? userId : user_Id,
-            isAdmin: false,
-            isParent: isParent,
-            encryptedData: cipherData,
-            parentId: isParent ? '' : parentId
-        }
+            const response = await storeData('store-user', request);
+            
+            if (isParent) {
+                sessionStorage.setItem('user', cipherData);
+            }
 
-        const response = storeData('store-user', request);
-        if (isParent) {
-            sessionStorage.setItem('user', cipherData);
+            if (location.state) {
+                navigate('/');
+            } else {
+                if (onSuccess) {
+                    await onSuccess();
+                } else {
+                    setContentVisible(false);
+                }
+            }
+        } catch (error) {
+            console.error('Error storing user:', error);
+        } finally {
+            setIsSubmitting(false);
         }
-        setStatus(response);
     };
 
     return (
@@ -179,15 +205,48 @@ function AddNewUser({ user_Id, phoneNumber, isParent, parentId, editData, setCon
 
             {(!isParent) || isEdit ? (
                 <div className='container'>
-                    <Button variant="contained" color='primary' className='custom-button' sx={{mt:2}}
-                        onClick={handleSubmit} >Update</Button>
-                    <Button variant="contained" color='inherit' className='custom-button' sx={{mt:2}}
-                        onClick={() => setContentVisible(false)} >Cancel</Button>
+                    <Button 
+                        variant="contained" 
+                        color='primary' 
+                        className='custom-button' 
+                        sx={{mt:2}}
+                        onClick={handleSubmit}
+                        disabled={isSubmitting}
+                    >
+                        {isSubmitting ? (
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />
+                                Updating...
+                            </Box>
+                        ) : 'Update'}
+                    </Button>
+                    <Button 
+                        variant="contained" 
+                        color='inherit' 
+                        className='custom-button' 
+                        sx={{mt:2}}
+                        onClick={() => setContentVisible(false)}
+                        disabled={isSubmitting}
+                    >
+                        Cancel
+                    </Button>
                 </div>
             ) : (
                 <div className='container'>
-                    <Button variant="contained" color="primary" className='custom-button' onClick={handleSubmit} fullWidth>
-                        Submit
+                    <Button 
+                        variant="contained" 
+                        color="primary" 
+                        className='custom-button' 
+                        onClick={handleSubmit} 
+                        fullWidth
+                        disabled={isSubmitting}
+                    >
+                        {isSubmitting ? (
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />
+                                Submitting...
+                            </Box>
+                        ) : 'Submit'}
                     </Button>
                 </div>
             )}
