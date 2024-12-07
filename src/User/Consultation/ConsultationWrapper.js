@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Box, CircularProgress, Alert } from '@mui/material';
-import { fetchData, fetchUserData } from '../../Helper/ApiHelper';
+import { fetchData } from '../../Helper/ApiHelper';
 import { decryptData } from '../../Helper/Secure';
 import Consultation from './Consultation';
 
@@ -19,16 +19,24 @@ function ConsultationWrapper({ consultationData }) {
         const userDataFromSession = sessionStorage.getItem('user');
         const userData = userDataFromSession ? decryptData(userDataFromSession) : null;
 
-        const [treatments, questions] = await Promise.all([
-          fetchData('get-treatments'),
-          fetchData('get-questions')
-        ]);
+        if (userData) {
+          const [treatments, questions] = await Promise.all([
+            fetchData('get-treatments'),
+            fetchData('get-questions')
+          ]);
 
-        setData({
-          treatmentDetails: treatments,
-          questionDetails: questions,
-          userData: userData
-        });
+          setData({
+            treatmentDetails: treatments,
+            questionDetails: questions,
+            userData: userData
+          });
+        } else {
+          setData({
+            treatmentDetails: [],
+            questionDetails: [],
+            userData: null
+          });
+        }
       } catch (error) {
         console.error('Error loading consultation data:', error);
         setError('Failed to load consultation data. Please try again later.');

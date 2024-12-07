@@ -97,6 +97,7 @@ function Consultation ({consultationData, initialTreatmentDetails, initialQuesti
             setIsLoggedIn(true);
         } else {
             setIsLoggedIn(false);
+            setIsLoading(false);
         }
     }, [userData]);
 
