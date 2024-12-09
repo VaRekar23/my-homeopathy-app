@@ -11,6 +11,7 @@ import DialogContent from '@mui/material/DialogContent';
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
+import { getAge } from '../../Helper/CommonMethods';
 
 function OrdersAdmin () {
     const [orderDetails, setOrderDetails] = useState([]);
@@ -23,15 +24,6 @@ function OrdersAdmin () {
     const [selectedImage, setSelectedImage] = useState(null);
     const [openImageDialog, setOpenImageDialog] = useState(false);
     const [loadingImages, setLoadingImages] = useState({});
-
-    const getAge = (dob) => {
-        const today = dayjs();
-        return today.diff(dob, 'year')!==0 ? 
-                today.diff(dob, 'year')+' years' : 
-                    (today.diff(dob, 'month')!==0 ? 
-                        today.diff(dob, 'month')+' months' : 
-                        today.diff(dob, 'day')+' days');
-    }
 
     const getOrderDetails = async (userId) => {
         try {

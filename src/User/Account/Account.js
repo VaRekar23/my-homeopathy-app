@@ -11,6 +11,7 @@ import { AddCircle, Delete, Edit, Person, PersonAdd } from '@mui/icons-material'
 import AddNewUser from '../../Login/AddNewUser';
 import dayjs from 'dayjs';
 import { useSnackbar } from '../../hooks/useSnackbar';
+import { getAge } from '../../Helper/CommonMethods';
 
 function Account() {
     const theme = useTheme();
@@ -161,7 +162,7 @@ function Account() {
                 <Grid container spacing={2}>
                     <Grid item xs={12} sm={6}>
                         <Typography variant="body2" color="textSecondary">
-                            Age: {user.age}
+                            Age: {getAge(user.dob)}
                         </Typography>
                     </Grid>
                     <Grid item xs={12} sm={6}>
